@@ -1,6 +1,10 @@
 package com.example.iot_producer.model;
 
-public class WeatherData {
+import java.io.Serializable;
+
+public class WeatherData implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private String date;
     private float temperature;
     private float humidity;

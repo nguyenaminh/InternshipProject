@@ -1,9 +1,12 @@
 package com.example.iot_producer.service;
 
 import com.example.iot_producer.model.WeatherData;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.iot_producer.service.MessageSender;
 
 import java.io.*;
 import java.nio.file.*;
@@ -11,11 +14,16 @@ import java.util.*;
 
 @Service
 public class FileReaderService {
-    private final String folderPath = "data";
+    private final MessageSender messageSender;
+    private final String folderPath;
     private final Set<String> processedFiles = new HashSet<>();
+    private final String[] suffixes;
 
-    String[] suffixes = {".csv", ".json"};
-
+    public FileReaderService(MessageSender messageSender,@Value("${app.file-reader.folder-path:data}") String folderPath, @Value("${app.file-reader.file-suffixes:.csv,.json}") String suffixString) {
+        this.messageSender = messageSender;
+        this.folderPath = folderPath;
+        this.suffixes = suffixString.split(",");
+    }
     public void scanAndRead() {
         try {
             Files.createDirectories(Paths.get(folderPath));
@@ -28,10 +36,19 @@ public class FileReaderService {
             }
 
             for (File file : dataFiles) {
-                if(!processedFiles.contains(file.getName())) {
+                if (!processedFiles.contains(file.getName())) {
                     System.out.println("Currently reading: " + file.getName());
                     List<WeatherData> dataList = readFile(file);
-                    dataList.forEach(System.out::println);
+
+                    for (WeatherData data : dataList) {
+                        System.out.println("Date= " + data.getDate()
+                                + ", temp: " + data.getTemperature()
+                                + ", humidity: " + data.getHumidity()
+                                + ", rainfall: " + data.getRainfall());
+
+                        messageSender.sendWeatherData(data);
+                    }
+
                     processedFiles.add(file.getName());
                 }
             }
