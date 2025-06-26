@@ -1,0 +1,14 @@
+[
+  {
+    "date": "2024-06-01",
+    "temperature": 30.5,
+    "humidity": 60.2,
+    "rainfall": 5.0
+  },
+  {
+    "date": "2024-06-02",
+    "temperature": 32.0,
+    "humidity": 58.0,
+    "rainfall": 0.0
+  }
+]
