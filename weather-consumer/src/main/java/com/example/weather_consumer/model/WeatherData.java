@@ -1,6 +1,11 @@
 package com.example.weather_consumer.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+
+@Entity
 public class WeatherData {
+    @Id
     private String date;
     private float temperature;
     private float humidity;
