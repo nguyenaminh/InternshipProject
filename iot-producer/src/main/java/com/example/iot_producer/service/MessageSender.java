@@ -3,20 +3,21 @@ package com.example.iot_producer.service;
 import com.example.iot_producer.model.WeatherData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Value;
+import com.example.iot_producer.config.RabbitMQConfig;
 
 @Service
 public class MessageSender {
 
     private final RabbitTemplate rabbitTemplate;
-    private final String queueName;
 
-    public MessageSender(RabbitTemplate rabbitTemplate, @Value("${app.rabbitmq.queue:weather.queue}") String queueName) {
+    public MessageSender(RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;
-        this.queueName = queueName;
     }
 
     public void sendWeatherData(WeatherData data) {
-        rabbitTemplate.convertAndSend(queueName, data);
+        System.out.println("Sending data to Exchange: " + RabbitMQConfig.EXCHANGE_NAME + " with routing key: " + RabbitMQConfig.ROUTING_KEY + " payload: " + data);
+        rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY, data);
+    
+        System.out.println("Data sent successfully.");
     }
 }
