@@ -3,22 +3,28 @@ package com.example.weather_consumer.service;
 import com.example.weather_consumer.model.WeatherData;
 import com.example.weather_consumer.repository.WeatherDataRepository;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 public class WeatherMessageConsumer {
 
-    private final WeatherDataRepository weatherDataRepository;
+    private final WeatherDataRepository repository;
 
-    public WeatherMessageConsumer(WeatherDataRepository weatherDataRepository) {
-        this.weatherDataRepository = weatherDataRepository;
-        System.out.println("WeatherMessageConsumer initialized");
+    public WeatherMessageConsumer(WeatherDataRepository repository) {
+        this.repository = repository;
     }
 
     @RabbitListener(queues = "weather.queue")
-    public void receiveMessage(WeatherData data) {
-        System.out.println("Received message from RabbitMQ: " + data);
-        weatherDataRepository.save(data); // Save to MySQL
-        System.out.println("✅ Saved to database: " + data);
+    public void receiveWeatherData(WeatherData message) {
+        WeatherData dataToSave = new WeatherData();
+
+        dataToSave.setDate(message.getDate());
+        dataToSave.setTemperature(message.getTemperature());
+        dataToSave.setHumidity(message.getHumidity());
+        dataToSave.setRainfall(message.getRainfall());
+
+        repository.save(dataToSave);
+        System.out.println("Saved to DB: " + dataToSave);
     }
+
 }

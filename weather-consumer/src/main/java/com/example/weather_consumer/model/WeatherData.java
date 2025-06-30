@@ -1,61 +1,68 @@
 package com.example.weather_consumer.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import java.time.LocalDate;
 
 @Entity
+@Table(name = "weather_data")
 public class WeatherData {
+
     @Id
-    private String date;
-    private float temperature;
-    private float humidity;
-    private float rainfall;
-    
-    public WeatherData() {
-    
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private LocalDate date;
+    private double temperature;
+    private double humidity;
+    private double rainfall;
+
+    // Constructors
+    public WeatherData() {}
+
+    // Getters and Setters
+
+    public Long getId() {
+        return id;
     }
 
-    public WeatherData(String date, float temperature, float humidity, float rainfall) {
-        this.date = date;
-        this.temperature = temperature;
-        this.humidity = humidity;
-        this.rainfall = rainfall;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public String getDate() {
+    public LocalDate getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(LocalDate date) {
         this.date = date;
     }
 
-    public float getTemperature() {
+    public double getTemperature() {
         return temperature;
     }
 
-    public void setTemperature(float temperature) {
+    public void setTemperature(double temperature) {
         this.temperature = temperature;
     }
 
-    public float getHumidity() {
+    public double getHumidity() {
         return humidity;
     }
 
-    public void setHumidity(float humidity) {
+    public void setHumidity(double humidity) {
         this.humidity = humidity;
     }
 
-    public float getRainfall() {
+    public double getRainfall() {
         return rainfall;
     }
 
-    public void setRainfall(float rainfall) {
+    public void setRainfall(double rainfall) {
         this.rainfall = rainfall;
     }
 
     @Override
     public String toString() {
-        return "Date= " + date + ", temp: " + temperature + ", humidity: " + humidity + ", rainfall: " + rainfall;
+        return "WeatherData{" + "id=" + id + ", date=" + date + ", temperature=" + temperature + ", humidity=" + humidity + ", rainfall=" + rainfall + '}';
     }
 }
