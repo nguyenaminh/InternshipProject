@@ -16,7 +16,6 @@ public class WeatherData {
     private double humidity;
     private double rainfall;
 
-    // Constructors
     public WeatherData() {}
 
     // Getters and Setters

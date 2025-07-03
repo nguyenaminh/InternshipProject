@@ -15,9 +15,15 @@ public class MessageSender {
     }
 
     public void sendWeatherData(WeatherData data) {
-        System.out.println("Sending data to Exchange: " + RabbitMQConfig.EXCHANGE_NAME + " with routing key: " + RabbitMQConfig.ROUTING_KEY + " payload: " + data);
+        System.out.println("Sending data to Exchange: " + RabbitMQConfig.EXCHANGE_NAME + " with routing key: " + RabbitMQConfig.ROUTING_KEY + " payload: ");
         rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY, data);
     
         System.out.println("Data sent successfully.");
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 }

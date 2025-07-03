@@ -17,24 +17,6 @@ public class RabbitMQConfig {
     public static final String ROUTING_KEY = "weather.routingKey";
 
     @Bean
-    public Queue weatherQueue() {
-        return new Queue(QUEUE_NAME, true);
-    }
-
-    @Bean
-    public DirectExchange weatherExchange() {
-        return new DirectExchange(EXCHANGE_NAME, true, false);
-    }
-
-    @Bean
-    public Binding weatherBinding(Queue weatherQueue, DirectExchange weatherExchange) {
-        return BindingBuilder
-                .bind(weatherQueue)
-                .to(weatherExchange)
-                .with(ROUTING_KEY);
-    }
-
-    @Bean
     public Jackson2JsonMessageConverter messageConverter() {
         return new Jackson2JsonMessageConverter();
     }
