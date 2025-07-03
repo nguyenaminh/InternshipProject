@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.nio.file.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -72,12 +74,13 @@ public class FileReaderService {
                     String[] parts = line.split(",");
                     if (parts.length != 4) continue;
 
-                    String date = parts[0];
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+                    LocalDateTime dateTime = LocalDateTime.parse(parts[0], formatter);
                     float temp = Float.parseFloat(parts[1]);
                     float humidity = Float.parseFloat(parts[2]);
                     float rainfall = Float.parseFloat(parts[3]);
 
-                    WeatherData data = new WeatherData(date, temp, humidity, rainfall);
+                    WeatherData data = new WeatherData(dateTime, temp, humidity, rainfall);
                     dataList.add(data);
                 }
 

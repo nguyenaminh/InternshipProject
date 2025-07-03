@@ -1,0 +1,11 @@
+stationCode,dateTime,temperature,humidity,rainfall
+,invalid-date,-999.0,NaN,-100.0
+,invalid-date,-999.0,NaN,-100.0
+,invalid-date,-999.0,NaN,-100.0
+,invalid-date,-999.0,NaN,-100.0
+,invalid-date,-999.0,NaN,-100.0
+,invalid-date,-999.0,NaN,-100.0
+,invalid-date,-999.0,NaN,-100.0
+,invalid-date,-999.0,NaN,-100.0
+,invalid-date,-999.0,NaN,-100.0
+,invalid-date,-999.0,NaN,-100.0

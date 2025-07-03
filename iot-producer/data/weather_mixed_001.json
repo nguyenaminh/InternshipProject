@@ -1,0 +1,107 @@
+[
+  {
+    "stationCode": "STN002",
+    "dateTime": "2024-07-03T17:49:00",
+    "temperature": 16.55,
+    "humidity": 30.94,
+    "rainfall": 294.32
+  },
+  {
+    "stationCode": "",
+    "dateTime": "invalid-date",
+    "temperature": -999.0,
+    "humidity": "NaN",
+    "rainfall": -100.0
+  },
+  {
+    "stationCode": "",
+    "dateTime": "invalid-date",
+    "temperature": -999.0,
+    "humidity": "NaN",
+    "rainfall": -100.0
+  },
+  {
+    "stationCode": "STN001",
+    "dateTime": "2024-07-03T17:25:00",
+    "temperature": 17.94,
+    "humidity": 52.76,
+    "rainfall": 3.41
+  },
+  {
+    "stationCode": "STN002",
+    "dateTime": "2024-07-03T12:49:00",
+    "temperature": 30.03,
+    "humidity": 72.48,
+    "rainfall": 271.24
+  },
+  {
+    "stationCode": "STN002",
+    "dateTime": "2024-07-03T20:24:00",
+    "temperature": 30.45,
+    "humidity": 89.92,
+    "rainfall": 86.99
+  },
+  {
+    "stationCode": "STN003",
+    "dateTime": "2024-07-03T18:43:00",
+    "temperature": 15.7,
+    "humidity": 57.6,
+    "rainfall": 237.76
+  },
+  {
+    "stationCode": "STN003",
+    "dateTime": "2024-07-03T13:05:00",
+    "temperature": 26.06,
+    "humidity": 67.22,
+    "rainfall": 99.45
+  },
+  {
+    "stationCode": "",
+    "dateTime": "invalid-date",
+    "temperature": -999.0,
+    "humidity": "NaN",
+    "rainfall": -100.0
+  },
+  {
+    "stationCode": "STN001",
+    "dateTime": "2024-07-03T15:18:00",
+    "temperature": 30.6,
+    "humidity": 53.67,
+    "rainfall": 231.15
+  },
+  {
+    "stationCode": "STN002",
+    "dateTime": "2024-07-03T17:03:00",
+    "temperature": 36.62,
+    "humidity": 28.75,
+    "rainfall": 4.76
+  },
+  {
+    "stationCode": "STN002",
+    "dateTime": "2024-07-03T13:18:00",
+    "temperature": 27.98,
+    "humidity": 82.52,
+    "rainfall": 202.76
+  },
+  {
+    "stationCode": "",
+    "dateTime": "invalid-date",
+    "temperature": -999.0,
+    "humidity": "NaN",
+    "rainfall": -100.0
+  },
+  {
+    "stationCode": "STN003",
+    "dateTime": "2024-07-03T18:46:00",
+    "temperature": 21.81,
+    "humidity": 27.81,
+    "rainfall": 263.24
+  },
+  {
+    "stationCode": "",
+    "dateTime": "invalid-date",
+    "temperature": -999.0,
+    "humidity": "NaN",
+    "rainfall": -100.0
+  }
+]

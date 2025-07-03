@@ -18,7 +18,7 @@ public class WeatherMessageConsumer {
     public void receiveWeatherData(WeatherData message) {
         WeatherData dataToSave = new WeatherData();
 
-        dataToSave.setDate(message.getDate());
+        dataToSave.setDateTime(message.getDateTime());
         dataToSave.setTemperature(message.getTemperature());
         dataToSave.setHumidity(message.getHumidity());
         dataToSave.setRainfall(message.getRainfall());

@@ -96,7 +96,7 @@ public class RabbitMQConfig {
                 WeatherData data = (WeatherData) jsonMessageConverter.fromMessage(message);
 
                 // ✅ Validate format only (DO NOT SAVE)
-                if (data.getDate() == null ||
+                if (data.getDateTime() == null ||
                     data.getTemperature() < -100 || data.getTemperature() > 100 ||
                     data.getHumidity() < 0 || data.getHumidity() > 100 ||
                     data.getRainfall() < 0) {
