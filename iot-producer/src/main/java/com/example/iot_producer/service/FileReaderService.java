@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.io.*;
 import java.nio.file.*;
@@ -60,7 +62,7 @@ public class FileReaderService {
         List<WeatherData> dataList = new ArrayList<>();
         String fileName = file.getName().toLowerCase();
 
-        if (fileName.endsWith(".csv")) {
+       if (fileName.endsWith(".csv")) {
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                 String line;
                 boolean firstLine = true;
@@ -72,15 +74,15 @@ public class FileReaderService {
                     }
 
                     String[] parts = line.split(",");
-                    if (parts.length != 4) continue;
+                    if (parts.length != 5) continue;
 
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-                    LocalDateTime dateTime = LocalDateTime.parse(parts[0], formatter);
-                    float temp = Float.parseFloat(parts[1]);
-                    float humidity = Float.parseFloat(parts[2]);
-                    float rainfall = Float.parseFloat(parts[3]);
+                    String stationCode = parts[0];
+                    LocalDateTime dateTime = LocalDateTime.parse(parts[1], DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                    float temp = Float.parseFloat(parts[2]);
+                    float humidity = Float.parseFloat(parts[3]);
+                    float rainfall = Float.parseFloat(parts[4]);
 
-                    WeatherData data = new WeatherData(dateTime, temp, humidity, rainfall);
+                    WeatherData data = new WeatherData(stationCode, dateTime, temp, humidity, rainfall);
                     dataList.add(data);
                 }
 
@@ -88,13 +90,15 @@ public class FileReaderService {
                 System.err.println("Failed to read CSV: " + e.getMessage());
             }
 
+
         } else if (fileName.endsWith(".json")) {
             ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.registerModule(new JavaTimeModule());
+            objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
             try (FileReader reader = new FileReader(file)) {
-                // Try reading as a list
                 dataList = objectMapper.readValue(reader, new TypeReference<List<WeatherData>>() {});
             } catch (MismatchedInputException ex) {
-                // Fallback: single object
                 try (FileReader reader = new FileReader(file)) {
                     WeatherData singleData = objectMapper.readValue(reader, WeatherData.class);
                     dataList.add(singleData);
@@ -105,6 +109,7 @@ public class FileReaderService {
                 System.err.println("Failed to read JSON file: " + e.getMessage());
             }
         }
+
 
         return dataList;
     }

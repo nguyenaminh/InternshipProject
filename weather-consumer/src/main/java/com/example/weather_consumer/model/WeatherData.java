@@ -72,6 +72,13 @@ public class WeatherData {
 
     @Override
     public String toString() {
-        return "WeatherData{" + "id=" + id + ", date=" + dateTime + ", temperature=" + temperature + ", humidity=" + humidity + ", rainfall=" + rainfall + '}';
+        return "WeatherData{" +
+                "id=" + id +
+                ", stationCode='" + stationCode + '\'' +
+                ", dateTime=" + dateTime +
+                ", temperature=" + temperature +
+                ", humidity=" + humidity +
+                ", rainfall=" + rainfall +
+                '}';
     }
 }

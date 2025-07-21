@@ -1,0 +1,9 @@
+[
+  {
+    "stationCode": "VN003",
+    "dateTime": "2024-07-21T09:15:00",
+    "temperature": 30.0,
+    "humidity": -10.0,
+    "rainfall": 7.5
+  }
+]

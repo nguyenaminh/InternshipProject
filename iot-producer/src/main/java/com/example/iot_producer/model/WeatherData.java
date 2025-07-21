@@ -3,25 +3,37 @@ package com.example.iot_producer.model;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-import org.springframework.cglib.core.Local;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class WeatherData implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    private String stationCode;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dateTime;
+
     private float temperature;
     private float humidity;
     private float rainfall;
-    
-    public WeatherData() {
-    
-    }
 
-    public WeatherData(LocalDateTime dateTime, float temperature, float humidity, float rainfall) {
+    public WeatherData() {}
+
+    public WeatherData(String stationCode, LocalDateTime dateTime, float temperature, float humidity, float rainfall) {
+        this.stationCode = stationCode;
         this.dateTime = dateTime;
         this.temperature = temperature;
         this.humidity = humidity;
         this.rainfall = rainfall;
+    }
+
+    // Getters and setters
+    public String getStationCode() {
+        return stationCode;
+    }
+
+    public void setStationCode(String stationCode) {
+        this.stationCode = stationCode;
     }
 
     public LocalDateTime getDateTime() {
@@ -58,6 +70,12 @@ public class WeatherData implements Serializable {
 
     @Override
     public String toString() {
-        return "Date= " + dateTime + ", temp: " + temperature + ", humidity: " + humidity + ", rainfall: " + rainfall;
+        return "WeatherData{" +
+                "stationCode='" + stationCode + '\'' +
+                ", dateTime=" + dateTime +
+                ", temperature=" + temperature +
+                ", humidity=" + humidity +
+                ", rainfall=" + rainfall +
+                '}';
     }
 }
