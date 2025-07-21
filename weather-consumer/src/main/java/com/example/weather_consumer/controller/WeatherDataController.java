@@ -1,9 +1,12 @@
 package com.example.weather_consumer.controller;
 
 import com.example.weather_consumer.model.WeatherData;
-import com.example.weather_consumer.repository.WeatherDataRepository;
+import com.example.weather_consumer.service.WeatherDataService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.lang.StackWalker.Option;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,34 +14,46 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/weather")
 public class WeatherDataController {
-    private final WeatherDataRepository repository;
+    private final WeatherDataService service;
 
-    public WeatherDataController(WeatherDataRepository repository) {
-        this.repository = repository;
+    public WeatherDataController(WeatherDataService service) {
+        this.service = service;
     }
 
     @GetMapping
-    public List<WeatherData> getAllWeatherData() {
-        return repository.findAll();
+    public ResponseEntity<List<WeatherData>> getAllWeatherData() {
+        List<WeatherData> dataList = service.getAllData();
+        return ResponseEntity.ok(dataList);
     }
 
     @GetMapping("/{id}")
-    public Optional<WeatherData> getById(@PathVariable Long id) {
-        return repository.findById(id);
+    public ResponseEntity<WeatherData> getById(@PathVariable Long id) {
+        Optional<WeatherData> result = service.getById(id);
+        return result.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @GetMapping("station/{stationCode}")
-    public List<WeatherData> getByStation(@PathVariable String stationCode) {
-        return repository.findByStationCode(stationCode);
+    @GetMapping("/station/{stationCode}")
+    public ResponseEntity<List<WeatherData>> getByStation(@PathVariable String stationCode) {
+        List<WeatherData> results = service.getByStationCode(stationCode);
+        if (results.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(results);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteById(@PathVariable Long id) {
-        repository.deleteById(id);
+    public ResponseEntity<String> deleteById(@PathVariable Long id) {
+        boolean deleted = service.deleteById(id);
+        if (deleted) {
+            return ResponseEntity.ok("Deleted weather data with ID: " + id);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/clear")
-    public void deleteAll() {
-        repository.deleteAll();
+    public ResponseEntity<String> deleteAll() {
+        service.deleteAll();
+        return ResponseEntity.ok("All weather data deleted.");
     }
 }
