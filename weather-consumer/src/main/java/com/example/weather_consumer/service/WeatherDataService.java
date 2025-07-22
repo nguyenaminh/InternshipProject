@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 
 @Service
 public class WeatherDataService {
@@ -17,6 +19,21 @@ public class WeatherDataService {
 
     public List<WeatherData> getAllData() {
         return repository.findAll();
+    }
+
+    public List<WeatherData> getAllDataWithinRange(String start, String end) {
+        try {
+            if(start == null || end == null) {
+                return getAllData();
+            }
+
+            LocalDateTime startTime = LocalDateTime.parse(start);
+            LocalDateTime endTime = LocalDateTime.parse(end);
+
+            return repository.findByDateTimeBetween(startTime, endTime);
+        } catch (DateTimeParseException e) {
+            return List.of();
+        }
     }
 
     public Optional<WeatherData> getById(Long id) {

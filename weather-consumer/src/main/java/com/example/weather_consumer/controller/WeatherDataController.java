@@ -2,11 +2,9 @@ package com.example.weather_consumer.controller;
 
 import com.example.weather_consumer.model.WeatherData;
 import com.example.weather_consumer.service.WeatherDataService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.lang.StackWalker.Option;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,10 +19,17 @@ public class WeatherDataController {
     }
 
     @GetMapping
-    public ResponseEntity<List<WeatherData>> getAllWeatherData() {
-        List<WeatherData> dataList = service.getAllData();
+    public ResponseEntity<List<WeatherData>> getAllWeatherData(
+    @RequestParam(required = false) String start,
+    @RequestParam(required = false) String end) {
+        List<WeatherData> dataList = service.getAllDataWithinRange(start,end);
+
+        if (dataList.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
         return ResponseEntity.ok(dataList);
     }
+    
 
     @GetMapping("/{id}")
     public ResponseEntity<WeatherData> getById(@PathVariable Long id) {
