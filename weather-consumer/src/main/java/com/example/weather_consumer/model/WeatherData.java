@@ -14,9 +14,9 @@ public class WeatherData {
     private String stationCode;
 
     private LocalDateTime dateTime;
-    private double temperature;
-    private double humidity;
-    private double rainfall;
+    private Double temperature;
+    private Double humidity;
+    private Double rainfall;
 
     public WeatherData() {}
 
