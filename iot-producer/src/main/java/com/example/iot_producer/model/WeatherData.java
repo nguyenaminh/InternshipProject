@@ -13,9 +13,9 @@ public class WeatherData implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dateTime;
 
-    private float temperature;
-    private float humidity;
-    private float rainfall;
+    private double temperature;
+    private double humidity;
+    private double rainfall;
 
     public WeatherData() {}
 
@@ -44,27 +44,27 @@ public class WeatherData implements Serializable {
         this.dateTime = dateTime;
     }
 
-    public float getTemperature() {
+    public double getTemperature() {
         return temperature;
     }
 
-    public void setTemperature(float temperature) {
+    public void setTemperature(double temperature) {
         this.temperature = temperature;
     }
 
-    public float getHumidity() {
+    public double getHumidity() {
         return humidity;
     }
 
-    public void setHumidity(float humidity) {
+    public void setHumidity(double humidity) {
         this.humidity = humidity;
     }
 
-    public float getRainfall() {
+    public double getRainfall() {
         return rainfall;
     }
 
-    public void setRainfall(float rainfall) {
+    public void setRainfall(double rainfall) {
         this.rainfall = rainfall;
     }
 

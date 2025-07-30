@@ -1,116 +1,51 @@
 package com.example.iot_producer.service;
 
 import com.example.iot_producer.model.WeatherData;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.MismatchedInputException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.databind.SerializationFeature;
-
-import java.io.*;
-import java.nio.file.*;
+import org.springframework.web.client.RestTemplate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Map;
 
 @Service
 public class FileReaderService {
     private final MessageSender messageSender;
-    private final String folderPath;
-    private final Set<String> processedFiles = new HashSet<>();
-    private final String[] suffixes;
+    private final RestTemplate restTemplate;
+    private final String apiKey;
 
-    public FileReaderService(MessageSender messageSender, 
-                             @Value("${app.file-reader.folder-path:data}") String folderPath,
-                             @Value("${app.file-reader.file-suffixes:.csv,.json}") String suffixString) {
+    public FileReaderService(
+            MessageSender messageSender,
+            @org.springframework.beans.factory.annotation.Value("${openweather.api.key}") String apiKey
+    ) {
         this.messageSender = messageSender;
-        this.folderPath = folderPath;
-        this.suffixes = suffixString.split(",");
+        this.restTemplate = new RestTemplate();
+        this.apiKey = apiKey;
     }
 
-    public void scanAndRead() {
-        try {
-            Files.createDirectories(Paths.get(folderPath));
-            File folder = new File(folderPath);
-            File[] dataFiles = folder.listFiles((dir, name) -> Arrays.stream(suffixes).anyMatch(name::endsWith));
+    public void fetchAndSend(String cityName) {
+        String url = "https://api.openweathermap.org/data/2.5/weather?q=" + cityName.trim() + "&appid=" + apiKey + "&units=metric";
+        Map<String, Object> response = restTemplate.getForObject(url, Map.class);
 
-            if (dataFiles == null || dataFiles.length == 0) {
-                System.out.println("No files present");
-                return;
+        if (response != null && response.containsKey("main")) {
+            Map<String, Object> main = (Map<String, Object>) response.get("main");
+            Double temperature = main.get("temp") != null ? Double.valueOf(main.get("temp").toString()) : null;
+            Double humidity = main.get("humidity") != null ? Double.valueOf(main.get("humidity").toString()) : null;
+            Double rainfall = 0.0;
+            if (response.containsKey("rain")) {
+                Map<String, Object> rain = (Map<String, Object>) response.get("rain");
+                rainfall = rain.get("1h") != null ? Double.valueOf(rain.get("1h").toString()) : 0.0;
             }
 
-            for (File file : dataFiles) {
-                if (!processedFiles.contains(file.getName())) {
-                    List<WeatherData> dataList = readFile(file);
+            WeatherData data = new WeatherData();
+            data.setStationCode(cityName.trim());
+            data.setDateTime(LocalDateTime.now());
+            data.setTemperature(temperature);
+            data.setHumidity(humidity);
+            data.setRainfall(rainfall);
 
-                    for (WeatherData data : dataList) {
-                        messageSender.sendWeatherData(data);
-                    }
-
-                    System.out.println("Sent " + dataList.size() + " message(s) from file: " + file.getName());
-                    processedFiles.add(file.getName());
-                }
-            }
-        } catch (IOException e) {
-            System.err.println("Error during scanning: " + e.getMessage());
+            messageSender.sendWeatherData(data);
+            System.out.println("Sent weather data for city: " + cityName);
+        } else {
+            System.err.println("Failed to fetch data for city: " + cityName);
         }
-    }
-
-    private List<WeatherData> readFile(File file) {
-        List<WeatherData> dataList = new ArrayList<>();
-        String fileName = file.getName().toLowerCase();
-
-       if (fileName.endsWith(".csv")) {
-            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                String line;
-                boolean firstLine = true;
-
-                while ((line = reader.readLine()) != null) {
-                    if (firstLine) {
-                        firstLine = false;
-                        continue;
-                    }
-
-                    String[] parts = line.split(",");
-                    if (parts.length != 5) continue;
-
-                    String stationCode = parts[0];
-                    LocalDateTime dateTime = LocalDateTime.parse(parts[1], DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                    float temp = Float.parseFloat(parts[2]);
-                    float humidity = Float.parseFloat(parts[3]);
-                    float rainfall = Float.parseFloat(parts[4]);
-
-                    WeatherData data = new WeatherData(stationCode, dateTime, temp, humidity, rainfall);
-                    dataList.add(data);
-                }
-
-            } catch (IOException e) {
-                System.err.println("Failed to read CSV: " + e.getMessage());
-            }
-
-
-        } else if (fileName.endsWith(".json")) {
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.registerModule(new JavaTimeModule());
-            objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-
-            try (FileReader reader = new FileReader(file)) {
-                dataList = objectMapper.readValue(reader, new TypeReference<List<WeatherData>>() {});
-            } catch (MismatchedInputException ex) {
-                try (FileReader reader = new FileReader(file)) {
-                    WeatherData singleData = objectMapper.readValue(reader, WeatherData.class);
-                    dataList.add(singleData);
-                } catch (IOException e) {
-                    System.err.println("Failed to read single-object JSON: " + e.getMessage());
-                }
-            } catch (IOException e) {
-                System.err.println("Failed to read JSON file: " + e.getMessage());
-            }
-        }
-
-
-        return dataList;
     }
 }

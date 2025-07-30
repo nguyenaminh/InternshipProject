@@ -12,15 +12,4 @@ public class IotProducerApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(IotProducerApplication.class, args);
 	}
-
-	@Bean
-	CommandLineRunner run(FileReaderService fileReaderService) {
-		return args -> {
-			while(true) {
-				fileReaderService.scanAndRead();
-				Thread.sleep(10000);
-			}
-		};
-	}
-
 }
