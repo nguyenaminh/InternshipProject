@@ -10,17 +10,14 @@ public class WeatherData {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String stationCode;
-
+    
+    private String city;
     private LocalDateTime dateTime;
     private Double temperature;
     private Double humidity;
     private Double rainfall;
 
     public WeatherData() {}
-
-    // Getters and Setters
 
     public Long getId() {
         return id;
@@ -30,12 +27,12 @@ public class WeatherData {
         this.id = id;
     }
 
-    public String getStationCode() {
-        return stationCode;
+    public String getCity() {
+        return city;
     }
 
-    public void setStationCode(String stationCode) {
-        this.stationCode = stationCode;
+    public void setCity(String city) {
+        this.city = city;
     }
 
     public LocalDateTime getDateTime() {
@@ -46,27 +43,27 @@ public class WeatherData {
         this.dateTime = dateTime;
     }
 
-    public double getTemperature() {
+    public Double getTemperature() {
         return temperature;
     }
 
-    public void setTemperature(double temperature) {
+    public void setTemperature(Double temperature) {
         this.temperature = temperature;
     }
 
-    public double getHumidity() {
+    public Double getHumidity() {
         return humidity;
     }
 
-    public void setHumidity(double humidity) {
+    public void setHumidity(Double humidity) {
         this.humidity = humidity;
     }
 
-    public double getRainfall() {
+    public Double getRainfall() {
         return rainfall;
     }
 
-    public void setRainfall(double rainfall) {
+    public void setRainfall(Double rainfall) {
         this.rainfall = rainfall;
     }
 
@@ -74,7 +71,7 @@ public class WeatherData {
     public String toString() {
         return "WeatherData{" +
                 "id=" + id +
-                ", stationCode='" + stationCode + '\'' +
+                ", city='" + city + '\'' +
                 ", dateTime=" + dateTime +
                 ", temperature=" + temperature +
                 ", humidity=" + humidity +

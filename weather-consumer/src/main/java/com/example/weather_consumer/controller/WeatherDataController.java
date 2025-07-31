@@ -15,7 +15,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/weather")
 public class WeatherDataController {
-    private static final List<String> VALID_SORT_FIELDS = List.of("id", "stationCode", "temperature", "humidity", "pressure", "dateTime");
+    private static final List<String> VALID_SORT_FIELDS = List.of("id", "city", "temperature", "humidity", "rainfall", "dateTime");
 
     private final WeatherDataService service;
 
@@ -35,9 +35,9 @@ public class WeatherDataController {
         return ResponseEntity.ok(dataList);
     }
 
-    @GetMapping("/station/{stationCode}")
-    public ResponseEntity<List<WeatherData>> getByStation(@PathVariable String stationCode) {
-        List<WeatherData> results = service.getByStationCode(stationCode);
+    @GetMapping("/city/{city}")
+    public ResponseEntity<List<WeatherData>> getByCity(@PathVariable String city) {
+        List<WeatherData> results = service.getByCity(city);
         if (results.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
@@ -46,22 +46,25 @@ public class WeatherDataController {
 
     @GetMapping("/filter")
     public ResponseEntity<Page<WeatherData>> getPagedWeatherData(
-            @RequestParam(required = false) String station,
+            @RequestParam(required = false) String city,
             @RequestParam(required = false) String start,
             @RequestParam(required = false) String end,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String direction) {
+        
         if (!VALID_SORT_FIELDS.contains(sortBy)) {
-            return ResponseEntity
-                .badRequest()
-                .body(Page.empty());
+            return ResponseEntity.badRequest().body(Page.empty());
         }
-        Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+
+        Sort sort = direction.equalsIgnoreCase("desc") 
+                ? Sort.by(sortBy).descending() 
+                : Sort.by(sortBy).ascending();
+
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<WeatherData> resultPage = service.getFilteredPaged(station, start, end, pageable);
+        Page<WeatherData> resultPage = service.getFilteredPaged(city, start, end, pageable);
 
         if (resultPage.isEmpty()) {
             return ResponseEntity.noContent().build();

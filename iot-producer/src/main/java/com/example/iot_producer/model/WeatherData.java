@@ -8,19 +8,19 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 public class WeatherData implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private String stationCode;
+    private String city;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dateTime;
 
-    private double temperature;
-    private double humidity;
-    private double rainfall;
+    private Double temperature;
+    private Double humidity;
+    private Double rainfall;
 
     public WeatherData() {}
 
-    public WeatherData(String stationCode, LocalDateTime dateTime, float temperature, float humidity, float rainfall) {
-        this.stationCode = stationCode;
+    public WeatherData(String city, LocalDateTime dateTime, Double temperature, Double humidity, Double rainfall) {
+        this.city = city;
         this.dateTime = dateTime;
         this.temperature = temperature;
         this.humidity = humidity;
@@ -28,12 +28,12 @@ public class WeatherData implements Serializable {
     }
 
     // Getters and setters
-    public String getStationCode() {
-        return stationCode;
+    public String getCity() {
+        return city;
     }
 
-    public void setStationCode(String stationCode) {
-        this.stationCode = stationCode;
+    public void setCity(String city) {
+        this.city = city;
     }
 
     public LocalDateTime getDateTime() {
@@ -44,34 +44,34 @@ public class WeatherData implements Serializable {
         this.dateTime = dateTime;
     }
 
-    public double getTemperature() {
+    public Double getTemperature() {
         return temperature;
     }
 
-    public void setTemperature(double temperature) {
+    public void setTemperature(Double temperature) {
         this.temperature = temperature;
     }
 
-    public double getHumidity() {
+    public Double getHumidity() {
         return humidity;
     }
 
-    public void setHumidity(double humidity) {
+    public void setHumidity(Double humidity) {
         this.humidity = humidity;
     }
 
-    public double getRainfall() {
+    public Double getRainfall() {
         return rainfall;
     }
 
-    public void setRainfall(double rainfall) {
+    public void setRainfall(Double rainfall) {
         this.rainfall = rainfall;
     }
 
     @Override
     public String toString() {
         return "WeatherData{" +
-                "stationCode='" + stationCode + '\'' +
+                "city='" + city + '\'' +
                 ", dateTime=" + dateTime +
                 ", temperature=" + temperature +
                 ", humidity=" + humidity +

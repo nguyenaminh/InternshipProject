@@ -43,8 +43,8 @@ public class WeatherDataService {
         return repository.findById(id);
     }
 
-    public List<WeatherData> getByStationCode(String stationCode) {
-        return repository.findByStationCode(stationCode);
+    public List<WeatherData> getByCity(String city) {
+        return repository.findByCity(city);
     }
 
     public boolean deleteById(Long id) {
@@ -76,13 +76,13 @@ public class WeatherDataService {
         }
     }
 
-    public Page<WeatherData> getFilteredPaged(String stationCode, String start, String end, Pageable pageable) {
+    public Page<WeatherData> getFilteredPaged(String city, String start, String end, Pageable pageable) {
         LocalDateTime startTime = parseOrDefault(start, LocalDateTime.of(1970, 1, 1, 0, 0));
         LocalDateTime endTime = parseOrDefault(end, LocalDateTime.now());
 
-        if (stationCode != null && !stationCode.isBlank()) {
-            return repository.findByStationCodeContainingIgnoreCaseAndDateTimeBetween(
-                    stationCode, startTime, endTime, pageable);
+        if (city != null && !city.isBlank()) {
+            return repository.findByCityContainingIgnoreCaseAndDateTimeBetween(
+                    city, startTime, endTime, pageable);
         }
 
         return repository.findByDateTimeBetween(startTime, endTime, pageable);

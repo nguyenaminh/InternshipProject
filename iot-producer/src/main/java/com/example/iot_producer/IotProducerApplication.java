@@ -1,12 +1,11 @@
 package com.example.iot_producer;
 
-import com.example.iot_producer.service.FileReaderService;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
+@EnableScheduling
 public class IotProducerApplication {
 
 	public static void main(String[] args) {
