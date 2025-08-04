@@ -14,17 +14,17 @@ public class WeatherData implements Serializable {
     private LocalDateTime dateTime;
 
     private Double temperature;
-    private Double humidity;
-    private Double rainfall;
+    private Double windSpeed;
+    private Double cloudCover;
 
     public WeatherData() {}
 
-    public WeatherData(String city, LocalDateTime dateTime, Double temperature, Double humidity, Double rainfall) {
+    public WeatherData(String city, LocalDateTime dateTime, Double temperature, Double windSpeed, Double cloudCover) {
         this.city = city;
         this.dateTime = dateTime;
         this.temperature = temperature;
-        this.humidity = humidity;
-        this.rainfall = rainfall;
+        this.windSpeed = windSpeed;
+        this.cloudCover = cloudCover;
     }
 
     // Getters and setters
@@ -52,20 +52,20 @@ public class WeatherData implements Serializable {
         this.temperature = temperature;
     }
 
-    public Double getHumidity() {
-        return humidity;
+    public Double getWindSpeed() {
+        return windSpeed;
     }
 
-    public void setHumidity(Double humidity) {
-        this.humidity = humidity;
+    public void setWindSpeed(Double windSpeed) {
+        this.windSpeed = windSpeed;
     }
 
-    public Double getRainfall() {
-        return rainfall;
+    public Double getCloudCover() {
+        return cloudCover;
     }
 
-    public void setRainfall(Double rainfall) {
-        this.rainfall = rainfall;
+    public void setCloudCover(Double cloudCover) {
+        this.cloudCover = cloudCover;
     }
 
     @Override
@@ -74,8 +74,8 @@ public class WeatherData implements Serializable {
                 "city='" + city + '\'' +
                 ", dateTime=" + dateTime +
                 ", temperature=" + temperature +
-                ", humidity=" + humidity +
-                ", rainfall=" + rainfall +
+                ", windSpeed=" + windSpeed +
+                ", cloudCover=" + cloudCover +
                 '}';
     }
 }

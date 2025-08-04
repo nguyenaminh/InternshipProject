@@ -15,7 +15,8 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/weather")
 public class WeatherDataController {
-    private static final List<String> VALID_SORT_FIELDS = List.of("id", "city", "temperature", "humidity", "rainfall", "dateTime");
+    private static final List<String> VALID_SORT_FIELDS =
+            List.of("id", "city", "temperature", "windSpeed", "cloudCover", "dateTime");
 
     private final WeatherDataService service;
 
@@ -25,9 +26,9 @@ public class WeatherDataController {
 
     @GetMapping
     public ResponseEntity<List<WeatherData>> getAllWeatherData(
-    @RequestParam(required = false) String start,
-    @RequestParam(required = false) String end) {
-        List<WeatherData> dataList = service.getAllDataWithinRange(start,end);
+            @RequestParam(required = false) String start,
+            @RequestParam(required = false) String end) {
+        List<WeatherData> dataList = service.getAllDataWithinRange(start, end);
 
         if (dataList.isEmpty()) {
             return ResponseEntity.noContent().build();
@@ -53,13 +54,13 @@ public class WeatherDataController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String direction) {
-        
+
         if (!VALID_SORT_FIELDS.contains(sortBy)) {
             return ResponseEntity.badRequest().body(Page.empty());
         }
 
-        Sort sort = direction.equalsIgnoreCase("desc") 
-                ? Sort.by(sortBy).descending() 
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
                 : Sort.by(sortBy).ascending();
 
         Pageable pageable = PageRequest.of(page, size, sort);

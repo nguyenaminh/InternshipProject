@@ -5,7 +5,7 @@ import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -33,7 +33,7 @@ public class DLQConsumer {
             String filename = "dlq_" + timestamp + "_" + UUID.randomUUID() + ".json";
 
             Path logFile = logFolder.resolve(filename);
-            Files.write(logFile, body.getBytes());
+            Files.writeString(logFile, body, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
             System.out.println("Logged DLQ message to " + logFile);
         } catch (IOException e) {

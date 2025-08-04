@@ -2,6 +2,7 @@ package com.example.weather_consumer.config;
 
 import com.example.weather_consumer.model.WeatherData;
 import com.example.weather_consumer.service.WeatherDataService;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.rabbitmq.client.Channel;
@@ -32,12 +33,10 @@ public class RabbitMQConfig {
         this.weatherDataService = weatherDataService;
     }
 
-    // Main exchange/queue/routing
     public static final String MAIN_EXCHANGE = "weather.direct";
     public static final String MAIN_QUEUE = "weather.queue";
     public static final String MAIN_ROUTING_KEY = "weather.routingKey";
 
-    // Dead letter exchange/queue
     public static final String DLX_EXCHANGE = "weather.dlx";
     public static final String DLQ_QUEUE = "weather.dlq";
     public static final String DLQ_ROUTING_KEY = "weather.dlq.routingKey";
@@ -83,15 +82,18 @@ public class RabbitMQConfig {
     public MessageConverter jsonMessageConverter() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter(objectMapper);
 
+        // ✅ Map producer class name to consumer class
         DefaultClassMapper classMapper = new DefaultClassMapper();
         Map<String, Class<?>> idClassMapping = new HashMap<>();
         idClassMapping.put("com.example.iot_producer.model.WeatherData", WeatherData.class);
         classMapper.setIdClassMapping(idClassMapping);
 
         converter.setClassMapper(classMapper);
+
         return converter;
     }
 
@@ -120,7 +122,7 @@ public class RabbitMQConfig {
                 channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
 
             } catch (Exception e) {
-                logger.error("Failed to process message, routing to DLQ: {}", e.getMessage());
+                logger.error("Failed to process message: {}, routing to DLQ", e.getMessage());
                 channel.basicReject(message.getMessageProperties().getDeliveryTag(), false);
             }
         });
@@ -132,15 +134,6 @@ public class RabbitMQConfig {
         if (data == null) return false;
         if (data.getCity() == null || data.getCity().isBlank()) return false;
         if (data.getDateTime() == null || data.getDateTime().isAfter(LocalDateTime.now().plusHours(2))) {
-            return false;
-        }
-        if (data.getTemperature() == null || data.getTemperature() < -90 || data.getTemperature() > 60) {
-            return false;
-        }
-        if (data.getHumidity() == null || data.getHumidity() < 0 || data.getHumidity() > 100) {
-            return false;
-        }
-        if (data.getRainfall() == null || data.getRainfall() < 0 || data.getRainfall() > 300) {
             return false;
         }
         return true;
