@@ -2,23 +2,23 @@ import { useEffect, useState } from "react";
 
 export default function DataTable() {
   const [weatherData, setWeatherData] = useState([]);
-  const [stationCode, setStationCode] = useState('');
-  const [startDateTime, setStartDateTime] = useState('');
-  const [endDateTime, setEndDateTime] = useState('');
+  const [city, setCity] = useState("");
+  const [startDateTime, setStartDateTime] = useState("");
+  const [endDateTime, setEndDateTime] = useState("");
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(5);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [hasNext, setHasNext] = useState(false);
 
   const fetchFilteredData = () => {
     const query = new URLSearchParams({
-      ...(stationCode && { station: stationCode }),
+      ...(city && { city }),
       ...(startDateTime && { start: startDateTime }),
       ...(endDateTime && { end: endDateTime }),
       page,
       size,
-      sortBy: 'dateTime',
-      direction: 'desc'
+      sortBy: "dateTime",
+      direction: "desc",
     });
 
     fetch(`http://localhost:8080/api/weather/filter?${query.toString()}`)
@@ -31,12 +31,12 @@ export default function DataTable() {
       .then((data) => {
         setWeatherData(data.content || []);
         setHasNext(!data.last);
-        setError('');
+        setError("");
       })
       .catch((err) => {
         console.error(err);
         setWeatherData([]);
-        setError('Failed to fetch filtered data');
+        setError("Failed to fetch filtered data");
       });
   };
 
@@ -57,9 +57,9 @@ export default function DataTable() {
       <form onSubmit={handleFilter} style={{ marginBottom: "1rem" }}>
         <input
           type="text"
-          placeholder="Station Code"
-          value={stationCode}
-          onChange={(e) => setStationCode(e.target.value)}
+          placeholder="City"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
         />
         <input
           type="date"
@@ -84,21 +84,34 @@ export default function DataTable() {
       {weatherData.length === 0 ? (
         <p>No data found.</p>
       ) : (
-        <ul>
-          {weatherData.map((entry) => (
-            <li key={entry.id}>
-              <strong>{entry.stationCode}</strong> | Temp: {entry.temperature}°C |
-              Humidity: {entry.humidity}% | <em>{entry.dateTime}</em>
-            </li>
-          ))}
-        </ul>
+        <table border="1" cellPadding="8" style={{ width: "100%", marginTop: "1rem" }}>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Date/Time</th>
+              <th>City</th>
+              <th>Temperature (°C)</th>
+              <th>Wind Speed (km/h)</th>
+              <th>Cloud Cover (%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {weatherData.map((entry) => (
+              <tr key={entry.id}>
+                <td>{entry.id}</td>
+                <td>{new Date(entry.dateTime).toLocaleString()}</td>
+                <td>{entry.city}</td>
+                <td>{entry.temperature}</td>
+                <td>{entry.windSpeed}</td>
+                <td>{entry.cloudCover}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
 
       <div style={{ marginTop: "1rem" }}>
-        <button
-          onClick={() => setPage((p) => Math.max(0, p - 1))}
-          disabled={page === 0}
-        >
+        <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}>
           Prev
         </button>
         <span style={{ margin: "0 1rem" }}>Page {page + 1}</span>

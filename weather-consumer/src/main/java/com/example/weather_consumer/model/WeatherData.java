@@ -10,18 +10,18 @@ public class WeatherData {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    private String city;
+
     private LocalDateTime dateTime;
+    private String city;
     private Double temperature;
     private Double windSpeed;
     private Double cloudCover;
 
     public WeatherData() {}
 
-    public WeatherData(String city, LocalDateTime dateTime, Double temperature, Double windSpeed, Double cloudCover) {
-        this.city = city;
+    public WeatherData( LocalDateTime dateTime, String city, Double temperature, Double windSpeed, Double cloudCover) {
         this.dateTime = dateTime;
+        this.city = city;
         this.temperature = temperature;
         this.windSpeed = windSpeed;
         this.cloudCover = cloudCover;

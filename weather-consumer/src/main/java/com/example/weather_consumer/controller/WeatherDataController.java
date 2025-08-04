@@ -4,11 +4,13 @@ import com.example.weather_consumer.model.WeatherData;
 import com.example.weather_consumer.service.WeatherDataService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +26,7 @@ public class WeatherDataController {
         this.service = service;
     }
 
+    // Existing endpoints
     @GetMapping
     public ResponseEntity<List<WeatherData>> getAllWeatherData(
             @RequestParam(required = false) String start,
@@ -93,5 +96,33 @@ public class WeatherDataController {
     public ResponseEntity<String> deleteAll() {
         service.deleteAll();
         return ResponseEntity.ok("All weather data deleted.");
+    }
+
+    // --- NEW Endpoints for Hourly/Daily/Monthly ---
+
+    @GetMapping("/hourly")
+    public ResponseEntity<?> getHourlyStats(
+            @RequestParam String city,
+            @RequestParam String date) {
+        return ResponseEntity.ok(service.getHourlyStats(city, LocalDate.parse(date)));
+    }
+
+    @GetMapping("/daily")
+    public ResponseEntity<?> getDailyStats(
+            @RequestParam String city,
+            @RequestParam String month) {
+        return ResponseEntity.ok(service.getDailyStats(city, month));
+    }
+
+    @GetMapping("/monthly")
+    public ResponseEntity<?> getMonthlyStats(
+            @RequestParam String city,
+            @RequestParam String year) {
+        return ResponseEntity.ok(service.getMonthlyStats(city, year));
+    }
+
+    @GetMapping("/latest")
+    public ResponseEntity<List<WeatherData>> getLatest3Hours() {
+        return ResponseEntity.ok(service.getLatest3Hours());
     }
 }
