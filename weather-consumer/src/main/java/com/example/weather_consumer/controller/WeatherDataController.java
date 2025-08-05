@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -121,8 +122,28 @@ public class WeatherDataController {
         return ResponseEntity.ok(service.getMonthlyStats(city, year));
     }
 
+    @GetMapping("/monthly/last12")
+    public ResponseEntity<?> getLast12MonthsStats(@RequestParam String city) {
+        return ResponseEntity.ok(service.getLast12MonthsStats(city));
+    }
+
     @GetMapping("/latest")
     public ResponseEntity<List<WeatherData>> getLatest9Hours() {
         return ResponseEntity.ok(service.getLatest9Hours());
+    }
+
+    @GetMapping("/health")
+    public ResponseEntity<String> healthCheck() {
+        return ResponseEntity.ok("Consumer is ready");
+    }
+
+    @GetMapping("/exists")
+    public ResponseEntity<Boolean> checkExists(
+            @RequestParam String city,
+            @RequestParam String dateTime
+    ) {
+        LocalDateTime dt = LocalDateTime.parse(dateTime);
+        boolean exists = service.existsByCityAndDateTime(city, dt);
+        return ResponseEntity.ok(exists);
     }
 }

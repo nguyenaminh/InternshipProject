@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.TreeMap;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
@@ -117,7 +118,7 @@ public class WeatherDataService {
     }
 
     // NEW: Monthly stats (for a given year)
-    public Map<Integer, Double> getMonthlyStats(String city, String year) {
+    public Map<String, Map<String, Double>> getMonthlyStats(String city, String year) {
         Year y = Year.parse(year); // expects "yyyy"
         LocalDateTime start = y.atMonth(1).atDay(1).atStartOfDay();
         LocalDateTime end = y.atMonth(12).atEndOfMonth().atTime(23, 59, 59);
@@ -125,12 +126,33 @@ public class WeatherDataService {
 
         return data.stream()
                 .collect(Collectors.groupingBy(
-                        d -> d.getDateTime().getMonthValue(),
-                        Collectors.averagingDouble(d -> d.getTemperature() != null ? d.getTemperature() : 0)
+                        d -> d.getDateTime().getYear() + "-" + String.format("%02d", d.getDateTime().getMonthValue()),
+                        Collectors.collectingAndThen(Collectors.toList(), list -> {
+                            double avgTemp = list.stream()
+                                    .filter(d -> d.getTemperature() != null)
+                                    .mapToDouble(WeatherData::getTemperature)
+                                    .average().orElse(0);
+
+                            double avgWind = list.stream()
+                                    .filter(d -> d.getWindSpeed() != null)
+                                    .mapToDouble(WeatherData::getWindSpeed)
+                                    .average().orElse(0);
+
+                            double avgCloud = list.stream()
+                                    .filter(d -> d.getCloudCover() != null)
+                                    .mapToDouble(WeatherData::getCloudCover)
+                                    .average().orElse(0);
+
+                            return Map.of(
+                                    "temperature", avgTemp,
+                                    "windSpeed", avgWind,
+                                    "cloudCover", avgCloud
+                            );
+                        })
                 ));
     }
 
-    // 🔑 Helper: parse either full datetime or just a date
+    // Helper: parse either full datetime or just a date
     private LocalDateTime parseToDateTime(String input, boolean isStart) {
         if (input == null || input.isBlank()) return isStart 
             ? LocalDateTime.of(1970, 1, 1, 0, 0) 
@@ -151,4 +173,27 @@ public class WeatherDataService {
             }
         }
     }
+
+    public Map<String, Double> getLast12MonthsStats(String city) {
+        LocalDate now = LocalDate.now().withDayOfMonth(1); // current month start
+        LocalDate start = now.minusMonths(11); // 12 months ago
+        LocalDateTime startDateTime = start.atStartOfDay();
+        LocalDateTime endDateTime = now.plusMonths(1).atStartOfDay().minusSeconds(1);
+
+        List<WeatherData> data = repository.findByCityAndDateTimeBetween(city, startDateTime, endDateTime);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
+
+        return data.stream()
+                .collect(Collectors.groupingBy(
+                        d -> d.getDateTime().format(formatter),
+                        TreeMap::new, // keeps months sorted
+                        Collectors.averagingDouble(d -> d.getTemperature() != null ? d.getTemperature() : 0)
+                ));
+    }
+
+    public boolean existsByCityAndDateTime(String city, LocalDateTime dateTime) {
+    return repository.existsByCityAndDateTime(city, dateTime);
+}
+
 }

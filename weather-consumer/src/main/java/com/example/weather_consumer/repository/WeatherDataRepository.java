@@ -24,4 +24,7 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
             String city, LocalDateTime start, LocalDateTime end, Pageable pageable);
 
     List<WeatherData> findByCityAndDateTimeBetween(String city, LocalDateTime start, LocalDateTime end);
+
+    boolean existsByCityAndDateTime(String city, LocalDateTime dateTime);
+
 }
