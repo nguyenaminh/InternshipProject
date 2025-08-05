@@ -25,7 +25,7 @@ export default function DailyChart({ city = "Hanoi" }) {
         const tempMap = new Map();
         raw.forEach((d) => {
           const dt = new Date(d.dateTime);
-          dt.setMinutes(0, 0, 0); // round down to exact hour
+          dt.setMinutes(0, 0, 0);
           tempMap.set(dt.getTime(), d.temperature);
         });
 
@@ -33,9 +33,8 @@ export default function DailyChart({ city = "Hanoi" }) {
         const now = new Date();
         now.setMinutes(0, 0, 0);
 
-        // Generate last 24 hourly slots (25 points: from 24h ago to now)
         const slots = [];
-        for (let i = 24; i >= 0; i--) {
+        for (let i = 23; i >= 0; i--) {
           const slotTime = new Date(now.getTime() - i * 60 * 60 * 1000);
           const timeLabel = slotTime.toLocaleTimeString("en-GB", {
             hour: "2-digit",
