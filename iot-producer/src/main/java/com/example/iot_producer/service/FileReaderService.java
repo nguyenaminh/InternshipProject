@@ -108,9 +108,9 @@ public class FileReaderService {
                         continue;
                     }
 
-                    Double temperature = tempsRaw.get(i) != null ? ((Number) tempsRaw.get(i)).doubleValue() : null;
-                    Double windSpeed  = windsRaw.get(i) != null  ? ((Number) windsRaw.get(i)).doubleValue()  : null;
-                    Double cloudCover = cloudsRaw.get(i) != null ? ((Number) cloudsRaw.get(i)).doubleValue() : null;
+                    Double temperature = tempsRaw.get(i) != null ? Math.round(((Number) tempsRaw.get(i)).doubleValue() * 100.0) / 100.0 : null;
+                    Double windSpeed  = windsRaw.get(i)  != null ? Math.round(((Number) windsRaw.get(i)).doubleValue()  * 100.0) / 100.0 : null;
+                    Double cloudCover = cloudsRaw.get(i) != null ? Math.round(((Number) cloudsRaw.get(i)).doubleValue() * 100.0) / 100.0 : null;
 
                     WeatherData data = new WeatherData();
                     data.setCity(city);
@@ -144,7 +144,7 @@ public class FileReaderService {
                 "&timezone=auto",
                 lat, lon,
                 LocalDate.now().minusMonths(12).withDayOfMonth(1),
-                LocalDate.now()
+                LocalDate.now().minusDays(2)
             );
 
             Map<String, Object> response = restTemplate.getForObject(url, Map.class);
@@ -158,7 +158,7 @@ public class FileReaderService {
                 List<?> cloudMean = (List<?>) daily.get("cloudcover_mean");
 
                 for (int i = 0; i < times.size(); i++) {
-                    LocalDateTime date = LocalDate.parse(times.get(i)).atStartOfDay();
+                    LocalDateTime date = LocalDate.parse(times.get(i)).atStartOfDay().withNano(0);
 
                     if (weatherDataExists(city, date)) {
                         System.out.println("Skipped duplicate for " + city + " on " + date);
@@ -168,14 +168,20 @@ public class FileReaderService {
                     Double avgTemp = null;
                     if (tempMax.get(i) != null && tempMin.get(i) != null) {
                         avgTemp = (((Number) tempMax.get(i)).doubleValue() + ((Number) tempMin.get(i)).doubleValue()) / 2;
+                        // Round avgTemp to 2 decimals
+                        avgTemp = Math.round(avgTemp * 100.0) / 100.0;
                     }
+
+                    // Round values to 2 decimal places here
+                    Double windSpeed  = windMax.get(i) != null ? Math.round(((Number) windMax.get(i)).doubleValue() * 100.0) / 100.0 : null;
+                    Double cloudCover = cloudMean.get(i) != null ? Math.round(((Number) cloudMean.get(i)).doubleValue() * 100.0) / 100.0 : null;
 
                     WeatherData data = new WeatherData();
                     data.setCity(city);
                     data.setDateTime(date);
                     data.setTemperature(avgTemp);
-                    data.setWindSpeed(windMax.get(i) != null ? ((Number) windMax.get(i)).doubleValue() : null);
-                    data.setCloudCover(cloudMean.get(i) != null ? ((Number) cloudMean.get(i)).doubleValue() : null);
+                    data.setWindSpeed(windSpeed);
+                    data.setCloudCover(cloudCover);
 
                     messageSender.sendWeatherData(data);
                 }
@@ -186,6 +192,7 @@ public class FileReaderService {
             e.printStackTrace();
         }
     }
+
 
     // Run immediately on startup
     @PostConstruct
