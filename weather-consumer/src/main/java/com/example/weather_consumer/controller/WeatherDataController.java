@@ -122,7 +122,7 @@ public class WeatherDataController {
     }
 
     @GetMapping("/latest")
-    public ResponseEntity<List<WeatherData>> getLatest3Hours() {
-        return ResponseEntity.ok(service.getLatest3Hours());
+    public ResponseEntity<List<WeatherData>> getLatest9Hours() {
+        return ResponseEntity.ok(service.getLatest9Hours());
     }
 }

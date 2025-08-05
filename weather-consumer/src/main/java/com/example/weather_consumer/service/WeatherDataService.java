@@ -82,14 +82,14 @@ public class WeatherDataService {
         return repository.findByDateTimeBetween(startTime, endTime, pageable);
     }
 
-    public List<WeatherData> getLatest3Hours() {
+    public List<WeatherData> getLatest9Hours() {
         LocalDateTime now = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
-        LocalDateTime threeHoursAgo = now.minusHours(3);
+        LocalDateTime nineHoursAgo = now.minusHours(8); // include current → 9 hours total
 
-        return repository.findByDateTimeBetween(threeHoursAgo, now);
+        return repository.findByDateTimeBetween(nineHoursAgo, now);
     }
 
-    // ✅ NEW: Hourly stats
+    // NEW: Hourly stats
     public Map<Integer, Double> getHourlyStats(String city, LocalDate date) {
         LocalDateTime start = date.atStartOfDay();
         LocalDateTime end = date.atTime(23, 59, 59);
@@ -102,7 +102,7 @@ public class WeatherDataService {
                 ));
     }
 
-    // ✅ NEW: Daily stats (for a given month)
+    // NEW: Daily stats (for a given month)
     public Map<Integer, Double> getDailyStats(String city, String month) {
         YearMonth ym = YearMonth.parse(month); // expects "yyyy-MM"
         LocalDateTime start = ym.atDay(1).atStartOfDay();
@@ -116,7 +116,7 @@ public class WeatherDataService {
                 ));
     }
 
-    // ✅ NEW: Monthly stats (for a given year)
+    // NEW: Monthly stats (for a given year)
     public Map<Integer, Double> getMonthlyStats(String city, String year) {
         Year y = Year.parse(year); // expects "yyyy"
         LocalDateTime start = y.atMonth(1).atDay(1).atStartOfDay();

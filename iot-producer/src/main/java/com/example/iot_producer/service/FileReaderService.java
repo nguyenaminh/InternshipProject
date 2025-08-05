@@ -42,7 +42,8 @@ public class FileReaderService {
     }
 
     // Fetch last 3 full hours of weather for a city
-    private void fetchLastThreeHours(String city) {
+    // Fetch last 9 full hours of weather for a city
+    private void fetchLastNineHours(String city) {
         try {
             double[] coords = getCoordinatesForCity(city);
             double lat = coords[0];
@@ -64,11 +65,10 @@ public class FileReaderService {
                 List<?> windsRaw = (List<?>) hourly.get("windspeed_10m");
                 List<?> cloudsRaw = (List<?>) hourly.get("cloudcover");
 
-                // Round current time down to nearest hour
                 LocalDateTime now = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
 
-                // Fetch last 3 hours: now, now-1h, now-2h
-                for (int back = 2; back >= 0; back--) {
+                // Fetch last 9 hours
+                for (int back = 8; back >= 0; back--) {
                     LocalDateTime targetTime = now.minusHours(back);
                     int idx = -1;
 
@@ -93,7 +93,7 @@ public class FileReaderService {
                         data.setCloudCover(cloudCover);
 
                         messageSender.sendWeatherData(data);
-                        System.out.println("Sent historical weather for " + city + " at " + targetTime +
+                        System.out.println("Sent weather for " + city + " at " + targetTime +
                                 " | Temp=" + temperature + " | Wind=" + windSpeed + " | Cloud=" + cloudCover);
                     } else {
                         System.err.println("No data found for " + city + " at " + targetTime);
@@ -117,7 +117,7 @@ public class FileReaderService {
             return;
         }
         for (String city : cities) {
-            fetchLastThreeHours(city);
+            fetchLastNineHours(city);
         }
     }
 }
