@@ -83,13 +83,6 @@ public class WeatherDataService {
         return repository.findByDateTimeBetween(startTime, endTime, pageable);
     }
 
-    public List<WeatherData> getLatest9Hours() {
-        LocalDateTime now = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
-        LocalDateTime nineHoursAgo = now.minusHours(8); // include current → 9 hours total
-
-        return repository.findByDateTimeBetween(nineHoursAgo, now);
-    }
-
     // NEW: Hourly stats
     public Map<Integer, Double> getHourlyStats(String city, LocalDate date) {
         LocalDateTime start = date.atStartOfDay();
@@ -192,8 +185,15 @@ public class WeatherDataService {
                 ));
     }
 
+    public List<WeatherData> getLatest24Hours(String city) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime from = now.minusHours(24);
+
+        return repository.findByCityAndDateTimeBetweenOrderByDateTimeAsc(city, from, now);
+    }
+
     public boolean existsByCityAndDateTime(String city, LocalDateTime dateTime) {
-    return repository.existsByCityAndDateTime(city, dateTime);
-}
+        return repository.existsByCityAndDateTime(city, dateTime);
+    }
 
 }

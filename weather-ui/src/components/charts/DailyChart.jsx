@@ -1,41 +1,72 @@
-import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
+import { useEffect, useState } from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  ResponsiveContainer,
+} from "recharts";
 
-export default function DailyChart({ data }) {
-  const now = new Date();
-  
-  // Generate the last 9 hours (including current)
-  const hours = Array.from({ length: 9 }, (_, i) => {
-    const date = new Date(now);
-    date.setHours(now.getHours() - (8 - i), 0, 0, 0); // go back 8 → 0 hours
-    return date;
-  });
+export default function DailyChart({ city = "Hanoi" }) {
+  const [chartData, setChartData] = useState([]);
 
-  // Map backend data by hour for quick lookup
-  const tempByHour = {};
-  if (Array.isArray(data)) {
-    data.forEach(d => {
-      const hour = new Date(d.dateTime).getHours();
-      tempByHour[hour] = d.temperature;
-    });
-  }
+  useEffect(() => {
+    const fetchLast24h = async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:8080/api/weather/latest24h?city=${city}`
+        );
+        if (!res.ok) throw new Error("Fetch failed");
+        const raw = await res.json(); // Array<WeatherData>
 
-  // Build chart data for each of the 9 hours
-  const chartData = hours.map(h => ({
-    time: h.toLocaleTimeString([], { hour: "2-digit" }),
-    temp: tempByHour[h.getHours()] ?? null,
-  }));
+        // Build map of hour slot -> temperature (could be null)
+        const tempMap = new Map();
+        raw.forEach((d) => {
+          const dt = new Date(d.dateTime);
+          dt.setMinutes(0, 0, 0); // round down to exact hour
+          tempMap.set(dt.getTime(), d.temperature);
+        });
+
+        // Align now to the latest exact past hour
+        const now = new Date();
+        now.setMinutes(0, 0, 0);
+
+        // Generate last 24 hourly slots (25 points: from 24h ago to now)
+        const slots = [];
+        for (let i = 24; i >= 0; i--) {
+          const slotTime = new Date(now.getTime() - i * 60 * 60 * 1000);
+          const timeLabel = slotTime.toLocaleTimeString("en-GB", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          const rawTemp = tempMap.get(slotTime.getTime());
+          const temp = rawTemp != null ? parseFloat(rawTemp.toFixed(1)) : null;
+          slots.push({ time: timeLabel, temp });
+        }
+
+        setChartData(slots);
+      } catch (err) {
+        console.error("DailyChart load error:", err);
+        setChartData([]);
+      }
+    };
+
+    fetchLast24h();
+  }, [city]);
 
   return (
     <div style={{ background: "white", padding: "1rem", borderRadius: "8px" }}>
-      <h3>Last 9 Hours Temperature</h3>
+      <h3>Last 24 Hours Temperature</h3>
       <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={chartData}>
-          <CartesianGrid stroke="#ccc" />
-          <XAxis dataKey="time" />
+        <BarChart data={chartData}>
+          <CartesianGrid stroke="#eee" />
+          <XAxis dataKey="time" interval={3} />
           <YAxis />
-          <Tooltip />
-          <Line type="monotone" dataKey="temp" stroke="#2563eb" connectNulls />
-        </LineChart>
+          <Tooltip formatter={(value) => (value != null ? `${value}°C` : "N/A")} />
+          <Bar dataKey="temp" fill="#2563eb" />
+        </BarChart>
       </ResponsiveContainer>
     </div>
   );

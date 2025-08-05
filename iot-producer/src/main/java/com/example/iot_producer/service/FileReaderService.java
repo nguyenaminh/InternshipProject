@@ -48,7 +48,6 @@ public class FileReaderService {
     // --- helper to check if weather data exists in Consumer DB ---
     private boolean weatherDataExists(String city, LocalDateTime dateTime) {
         try {
-            // Define a time window to account for precision differences
             LocalDateTime start = dateTime.withMinute(0).withSecond(0).withNano(0);
             LocalDateTime end = dateTime.withMinute(59).withSecond(59).withNano(999999999);
 
@@ -71,66 +70,58 @@ public class FileReaderService {
         return false;
     }
 
-    // --- updated Nine Hours fetch ---
-    private void fetchLastNineHours(String city) {
+    private void fetchLast24Hours(String city) {
         try {
             double[] coords = getCoordinatesForCity(city);
-            double lat = coords[0];
-            double lon = coords[1];
+            double lat = coords[0], lon = coords[1];
 
             String url = String.format(
                 "https://api.open-meteo.com/v1/forecast?latitude=%f&longitude=%f" +
+                "&past_days=1" +
                 "&hourly=temperature_2m,windspeed_10m,cloudcover" +
                 "&timezone=auto",
                 lat, lon
             );
 
             Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            if (response == null || !response.containsKey("hourly")) return;
 
-            if (response != null && response.containsKey("hourly")) {
-                Map<String, Object> hourly = (Map<String, Object>) response.get("hourly");
-                List<String> times = (List<String>) hourly.get("time");
-                List<?> tempsRaw = (List<?>) hourly.get("temperature_2m");
-                List<?> windsRaw = (List<?>) hourly.get("windspeed_10m");
-                List<?> cloudsRaw = (List<?>) hourly.get("cloudcover");
+            Map<String, Object> hourly = (Map<String, Object>) response.get("hourly");
+            List<String> times = (List<String>) hourly.get("time");
+            List<?> tempsRaw = (List<?>) hourly.get("temperature_2m");
+            List<?> windsRaw = (List<?>) hourly.get("windspeed_10m");
+            List<?> cloudsRaw = (List<?>) hourly.get("cloudcover");
 
-                LocalDateTime now = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
+            LocalDateTime now = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
+            LocalDateTime from = now.minusHours(23);
 
-                for (int back = 8; back >= 0; back--) {
-                    LocalDateTime targetTime = now.minusHours(back);
-                    int idx = -1;
+            for (int i = 0; i < times.size(); i++) {
+                LocalDateTime recordTime = LocalDateTime.parse(
+                    times.get(i), DateTimeFormatter.ISO_DATE_TIME
+                );
 
-                    for (int i = 0; i < times.size(); i++) {
-                        LocalDateTime hourlyTime = LocalDateTime.parse(times.get(i), DateTimeFormatter.ISO_DATE_TIME);
-                        if (hourlyTime.equals(targetTime)) {
-                            idx = i;
-                            break;
-                        }
+                if (!recordTime.isBefore(from) && !recordTime.isAfter(now)
+                        && recordTime.getMinute() == 0) {
+
+                    if (weatherDataExists(city, recordTime)) {
+                        System.out.println("Skipped duplicate for " + city + " at " + recordTime);
+                        continue;
                     }
 
-                    if (idx >= 0) {
-                        if (weatherDataExists(city, targetTime)) {
-                            System.out.println("Skipped duplicate for " + city + " at " + targetTime);
-                            continue;
-                        }
+                    Double temperature = tempsRaw.get(i) != null ? ((Number) tempsRaw.get(i)).doubleValue() : null;
+                    Double windSpeed  = windsRaw.get(i) != null  ? ((Number) windsRaw.get(i)).doubleValue()  : null;
+                    Double cloudCover = cloudsRaw.get(i) != null ? ((Number) cloudsRaw.get(i)).doubleValue() : null;
 
-                        Double temperature = tempsRaw.get(idx) != null ? ((Number) tempsRaw.get(idx)).doubleValue() : null;
-                        Double windSpeed = windsRaw.get(idx) != null ? ((Number) windsRaw.get(idx)).doubleValue() : null;
-                        Double cloudCover = cloudsRaw.get(idx) != null ? ((Number) cloudsRaw.get(idx)).doubleValue() : null;
+                    WeatherData data = new WeatherData();
+                    data.setCity(city);
+                    data.setDateTime(recordTime);
+                    data.setTemperature(temperature);
+                    data.setWindSpeed(windSpeed);
+                    data.setCloudCover(cloudCover);
 
-                        WeatherData data = new WeatherData();
-                        data.setCity(city);
-                        data.setDateTime(targetTime);
-                        data.setTemperature(temperature);
-                        data.setWindSpeed(windSpeed);
-                        data.setCloudCover(cloudCover);
-
-                        messageSender.sendWeatherData(data);
-                        System.out.println("Sent weather for " + city + " at " + targetTime +
-                                " | Temp=" + temperature + " | Wind=" + windSpeed + " | Cloud=" + cloudCover);
-                    } else {
-                        System.err.println("No data found for " + city + " at " + targetTime);
-                    }
+                    messageSender.sendWeatherData(data);
+                    System.out.println("Sent weather for " + city + " at " + recordTime +
+                        " | Temp=" + temperature + " | Wind=" + windSpeed + " | Cloud=" + cloudCover);
                 }
             }
         } catch (Exception e) {
@@ -196,7 +187,6 @@ public class FileReaderService {
         }
     }
 
-
     // Run immediately on startup
     @PostConstruct
     public void initFetch() {
@@ -211,8 +201,7 @@ public class FileReaderService {
 
         while (!consumerReady && attempts < 10) {
             try {
-                // just check if the consumer API is up
-                restTemplate.getForObject("http://localhost:8080/api/weather", String.class);
+                restTemplate.getForObject("http://localhost:8080/api/weather/health", String.class);
                 consumerReady = true;
                 System.out.println("Consumer is ready!");
             } catch (Exception e) {
@@ -228,8 +217,8 @@ public class FileReaderService {
         }
 
         for (String city : cities) {
-            fetchLastNineHours(city);
-            fetchLastYearData(city); // your method that checks & sends data
+            fetchLast24Hours(city);
+            fetchLastYearData(city);
         }
     }
 }

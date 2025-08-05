@@ -13,31 +13,31 @@ export default function Dashboard() {
     date: new Date().toISOString().slice(0, 10),
   });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Latest 3 hours
-        const latestRes = await fetch("http://localhost:8080/api/weather/latest");
-        setDailyData(await latestRes.json());
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       // Latest 9 hours
+  //       const latestRes = await fetch("http://localhost:8080/api/weather/latest");
+  //       setDailyData(await latestRes.json());
 
-        // Weekly stats
-        const weeklyRes = await fetch(
-          `http://localhost:8080/api/weather/daily?city=${filters.city}&month=${filters.date.slice(0,7)}`
-        );
-        setWeeklyData(await weeklyRes.json());
+  //       // Weekly stats
+  //       const weeklyRes = await fetch(
+  //         `http://localhost:8080/api/weather/daily?city=${filters.city}&month=${filters.date.slice(0,7)}`
+  //       );
+  //       setWeeklyData(await weeklyRes.json());
 
-        // Monthly stats
-        const monthlyRes = await fetch(
-          `http://localhost:8080/api/weather/monthly?city=${filters.city}&year=${filters.date.slice(0,4)}`
-        );
-        setMonthlyData(await monthlyRes.json());
-      } catch (err) {
-        console.error("Error fetching dashboard data:", err);
-      }
-    };
+  //       // Monthly stats
+  //       const monthlyRes = await fetch(
+  //         `http://localhost:8080/api/weather/monthly?city=${filters.city}&year=${filters.date.slice(0,4)}`
+  //       );
+  //       setMonthlyData(await monthlyRes.json());
+  //     } catch (err) {
+  //       console.error("Error fetching dashboard data:", err);
+  //     }
+  //   };
 
-    fetchData();
-  }, [filters]);
+  //   fetchData();
+  // }, [filters]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>

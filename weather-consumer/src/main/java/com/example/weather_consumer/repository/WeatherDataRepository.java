@@ -27,4 +27,9 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
 
     boolean existsByCityAndDateTime(String city, LocalDateTime dateTime);
 
+    List<WeatherData> findByCityAndDateTimeBetweenOrderByDateTimeAsc(
+        String city,
+        LocalDateTime start,
+        LocalDateTime end
+    );
 }

@@ -127,9 +127,9 @@ public class WeatherDataController {
         return ResponseEntity.ok(service.getLast12MonthsStats(city));
     }
 
-    @GetMapping("/latest")
-    public ResponseEntity<List<WeatherData>> getLatest9Hours() {
-        return ResponseEntity.ok(service.getLatest9Hours());
+    @GetMapping("/latest24h")
+    public ResponseEntity<List<WeatherData>> getLatest24Hours(@RequestParam String city) {
+        return ResponseEntity.ok(service.getLatest24Hours(city));
     }
 
     @GetMapping("/health")
