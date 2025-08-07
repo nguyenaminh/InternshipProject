@@ -108,13 +108,6 @@ public class WeatherDataController {
         return ResponseEntity.ok(service.getHourlyStats(city, LocalDate.parse(date)));
     }
 
-    @GetMapping("/daily")
-    public ResponseEntity<?> getDailyStats(
-            @RequestParam String city,
-            @RequestParam String month) {
-        return ResponseEntity.ok(service.getDailyStats(city, month));
-    }
-
     @GetMapping("/monthly")
     public ResponseEntity<?> getMonthlyStats(
             @RequestParam String city,
@@ -146,4 +139,10 @@ public class WeatherDataController {
         boolean exists = service.existsByCityAndDateTime(city, dt);
         return ResponseEntity.ok(exists);
     }
+    
+    @GetMapping("/weekly/last7")
+    public ResponseEntity<?> getLast7DaysStats(@RequestParam String city) {
+        return ResponseEntity.ok(service.getLast7DaysStats(city));
+    }
+
 }

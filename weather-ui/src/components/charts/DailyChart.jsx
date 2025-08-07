@@ -7,6 +7,7 @@ import {
   Tooltip,
   CartesianGrid,
   ResponsiveContainer,
+  Legend,
 } from "recharts";
 
 export default function DailyChart({ city = "Hanoi" }) {
@@ -21,15 +22,19 @@ export default function DailyChart({ city = "Hanoi" }) {
         if (!res.ok) throw new Error("Fetch failed");
         const raw = await res.json(); // Array<WeatherData>
 
-        // Build map of hour slot -> temperature (could be null)
-        const tempMap = new Map();
+        // Map hour -> full weather values
+        const dataMap = new Map();
         raw.forEach((d) => {
           const dt = new Date(d.dateTime);
           dt.setMinutes(0, 0, 0);
-          tempMap.set(dt.getTime(), d.temperature);
+          dataMap.set(dt.getTime(), {
+            temp: d.temperature,
+            wind: d.windSpeed,
+            cloud: d.cloudCover,
+          });
         });
 
-        // Align now to the latest exact past hour
+        // Align now to past hour
         const now = new Date();
         now.setMinutes(0, 0, 0);
 
@@ -40,9 +45,13 @@ export default function DailyChart({ city = "Hanoi" }) {
             hour: "2-digit",
             minute: "2-digit",
           });
-          const rawTemp = tempMap.get(slotTime.getTime());
-          const temp = rawTemp != null ? parseFloat(rawTemp.toFixed(1)) : null;
-          slots.push({ time: timeLabel, temp });
+          const values = dataMap.get(slotTime.getTime()) || {};
+          slots.push({
+            time: timeLabel,
+            temp: values.temp != null ? parseFloat(values.temp.toFixed(1)) : null,
+            wind: values.wind != null ? parseFloat(values.wind.toFixed(1)) : null,
+            cloud: values.cloud != null ? parseFloat(values.cloud.toFixed(0)) : null,
+          });
         }
 
         setChartData(slots);
@@ -56,15 +65,26 @@ export default function DailyChart({ city = "Hanoi" }) {
   }, [city]);
 
   return (
-    <div style={{ background: "white", padding: "1rem", borderRadius: "8px" }}>
-      <h3>Last 24 Hours Temperature</h3>
+    <div style={{ background: "#111", padding: "1rem", borderRadius: "8px", color: "white" }}>
+      <h3 style={{ marginBottom: "1rem" }}>Last 24 Hours - Weather Overview</h3>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={chartData}>
-          <CartesianGrid stroke="#eee" />
-          <XAxis dataKey="time" interval={3} />
-          <YAxis />
-          <Tooltip formatter={(value) => (value != null ? `${value}°C` : "N/A")} />
-          <Bar dataKey="temp" fill="#2563eb" />
+          <CartesianGrid stroke="#333" />
+          <XAxis dataKey="time" interval={3} stroke="#ccc" />
+          <YAxis stroke="#ccc" />
+          <Tooltip
+            contentStyle={{ backgroundColor: "#222", border: "none" }}
+            formatter={(value, name) => {
+              if (name === "Temp (°C)") return [`${value}°C`, name];
+              if (name === "Wind (m/s)") return [`${value} m/s`, name];
+              if (name === "Cloud (%)") return [`${value}%`, name];
+              return [value, name];
+            }}
+          />
+          <Legend />
+          <Bar dataKey="temp" name="Temp (°C)" fill="#2563eb" />
+          <Bar dataKey="wind" name="Wind (m/s)" fill="#10b981" />
+          <Bar dataKey="cloud" name="Cloud (%)" fill="#facc15" />
         </BarChart>
       </ResponsiveContainer>
     </div>

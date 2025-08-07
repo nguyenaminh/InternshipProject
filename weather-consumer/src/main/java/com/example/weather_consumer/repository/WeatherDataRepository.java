@@ -20,16 +20,11 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
 
     Page<WeatherData> findByDateTimeBetween(LocalDateTime start, LocalDateTime end, Pageable pageable);
 
-    Page<WeatherData> findByCityContainingIgnoreCaseAndDateTimeBetween(
-            String city, LocalDateTime start, LocalDateTime end, Pageable pageable);
+    Page<WeatherData> findByCityContainingIgnoreCaseAndDateTimeBetween(String city, LocalDateTime start, LocalDateTime end, Pageable pageable);
 
     List<WeatherData> findByCityAndDateTimeBetween(String city, LocalDateTime start, LocalDateTime end);
 
     boolean existsByCityAndDateTime(String city, LocalDateTime dateTime);
 
-    List<WeatherData> findByCityAndDateTimeBetweenOrderByDateTimeAsc(
-        String city,
-        LocalDateTime start,
-        LocalDateTime end
-    );
+    List<WeatherData> findByCityAndDateTimeBetweenOrderByDateTimeAsc(String city, LocalDateTime start, LocalDateTime end);
 }

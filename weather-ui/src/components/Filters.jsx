@@ -1,55 +1,61 @@
 import { useState } from "react";
 
 export default function Filters({ onChange }) {
-  const [city, setCity] = useState("Hanoi");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleToday = () => {
-    const today = new Date().toISOString().slice(0, 10);
-    setStartDate(today);
-    setEndDate(today);
-    onChange({ city, date: today });
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) return;
+
+    setIsLoading(true);
+    try {
+      const res = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(searchTerm)}&count=1`
+      );
+      const json = await res.json();
+      const location = json.results?.[0];
+
+      if (!location) {
+        alert("Location not found");
+        return;
+      }
+
+      // Emit the selected location info
+      onChange({
+        locationName: `${location.name}, ${location.country}`,
+        latitude: location.latitude,
+        longitude: location.longitude,
+        timezone: location.timezone,
+      });
+    } catch (error) {
+      console.error("Geocoding failed:", error);
+      alert("Failed to fetch location data.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleThisWeek = () => {
-    const today = new Date();
-    const monday = new Date(today.setDate(today.getDate() - today.getDay() + 1))
-      .toISOString()
-      .slice(0, 10);
-    const sunday = new Date(today.setDate(today.getDate() - today.getDay() + 7))
-      .toISOString()
-      .slice(0, 10);
-    setStartDate(monday);
-    setEndDate(sunday);
-    onChange({ city, start: monday, end: sunday });
-  };
-
-  const handleThisMonth = () => {
-    const now = new Date();
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
-      .toISOString()
-      .slice(0, 10);
-    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-      .toISOString()
-      .slice(0, 10);
-    setStartDate(firstDay);
-    setEndDate(lastDay);
-    onChange({ city, start: firstDay, end: lastDay });
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") handleSearch();
   };
 
   return (
-    <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
-      <select value={city} onChange={(e) => { setCity(e.target.value); onChange({ city: e.target.value }); }}>
-        <option value="Hanoi">Hanoi</option>
-        <option value="StationA">Station A</option>
-        <option value="StationB">Station B</option>
-      </select>
-      <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-      <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-      <button onClick={handleToday}>Today</button>
-      <button onClick={handleThisWeek}>This Week</button>
-      <button onClick={handleThisMonth}>This Month</button>
+    <div className="p-4 flex gap-2">
+      <input
+        type="text"
+        placeholder="Enter city or country"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        onKeyDown={handleKeyDown}
+        className="border px-3 py-2 rounded w-64"
+      />
+      <button
+        onClick={handleSearch}
+        disabled={isLoading}
+        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+      >
+        {isLoading ? "Searching..." : "Search"}
+      </button>
     </div>
   );
 }

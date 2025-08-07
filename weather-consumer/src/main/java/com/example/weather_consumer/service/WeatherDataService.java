@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.TreeMap;
@@ -16,6 +18,7 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -196,4 +199,61 @@ public class WeatherDataService {
         return repository.existsByCityAndDateTime(city, dateTime);
     }
 
+    public Map<String, Map<String, Double>> getLast7DaysStats(String city) {
+        LocalDate today = LocalDate.now();
+        LocalDate start = today.minusDays(6);
+
+        List<WeatherData> records = repository.findByCityAndDateTimeBetween(
+            city,
+            start.atStartOfDay(),
+            today.atTime(23, 59, 59)
+        );
+
+        // Group by date
+        Map<LocalDate, List<WeatherData>> grouped = records.stream()
+            .collect(Collectors.groupingBy(d -> d.getDateTime().toLocalDate()));
+
+        Map<String, Map<String, Double>> result = new LinkedHashMap<>();
+
+        for (int i = 6; i >= 0; i--) {
+            LocalDate date = today.minusDays(i);
+            List<WeatherData> daily = grouped.get(date);
+
+            Double avgTemp = null;
+            Double avgWind = null;
+            Double avgCloud = null;
+
+            if (daily != null && !daily.isEmpty()) {
+                avgTemp = daily.stream()
+                    .map(WeatherData::getTemperature)
+                    .filter(Objects::nonNull)
+                    .mapToDouble(Double::doubleValue)
+                    .average()
+                    .orElse(Double.NaN);
+
+                avgWind = daily.stream()
+                    .map(WeatherData::getWindSpeed)
+                    .filter(Objects::nonNull)
+                    .mapToDouble(Double::doubleValue)
+                    .average()
+                    .orElse(Double.NaN);
+
+                avgCloud = daily.stream()
+                    .map(WeatherData::getCloudCover)
+                    .filter(Objects::nonNull)
+                    .mapToDouble(Double::doubleValue)
+                    .average()
+                    .orElse(Double.NaN);
+            }
+
+            Map<String, Double> dailyStats = new HashMap<>();
+            dailyStats.put("temperature", (avgTemp != null && !Double.isNaN(avgTemp)) ? avgTemp : null);
+            dailyStats.put("windSpeed", (avgWind != null && !Double.isNaN(avgWind)) ? avgWind : null);
+            dailyStats.put("cloudCover", (avgCloud != null && !Double.isNaN(avgCloud)) ? avgCloud : null);
+
+            result.put(date.toString(), dailyStats);
+        }
+
+        return result;
+    }
 }

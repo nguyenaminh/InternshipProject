@@ -4,6 +4,7 @@ import com.example.iot_producer.config.WeatherConfig;
 import com.example.iot_producer.model.WeatherData;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -95,16 +96,16 @@ public class FileReaderService {
             LocalDateTime now = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
             LocalDateTime from = now.minusHours(23);
 
-            for (int i = 0; i < times.size(); i++) {
-                LocalDateTime recordTime = LocalDateTime.parse(
-                    times.get(i), DateTimeFormatter.ISO_DATE_TIME
-                );
+            int skipped = 0;
+            int sent = 0;
 
-                if (!recordTime.isBefore(from) && !recordTime.isAfter(now)
-                        && recordTime.getMinute() == 0) {
+            for (int i = 0; i < times.size(); i++) {
+                LocalDateTime recordTime = LocalDateTime.parse(times.get(i), DateTimeFormatter.ISO_DATE_TIME);
+
+                if (!recordTime.isBefore(from) && !recordTime.isAfter(now) && recordTime.getMinute() == 0) {
 
                     if (weatherDataExists(city, recordTime)) {
-                        System.out.println("Skipped duplicate for " + city + " at " + recordTime);
+                        skipped++;
                         continue;
                     }
 
@@ -120,17 +121,17 @@ public class FileReaderService {
                     data.setCloudCover(cloudCover);
 
                     messageSender.sendWeatherData(data);
-                    System.out.println("Sent weather for " + city + " at " + recordTime +
-                        " | Temp=" + temperature + " | Wind=" + windSpeed + " | Cloud=" + cloudCover);
+                    sent++;
                 }
             }
+
+            System.out.println("[Fetch] City: " + city + " | Sent: " + sent + " | Skipped (already in DB): " + skipped);
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("Error fetching weather for " + city + ": " + e.getMessage());
         }
     }
 
-    // --- updated Last Year fetch ---
     private void fetchLastYearData(String city) {
         try {
             double[] coords = getCoordinatesForCity(city);
@@ -157,23 +158,24 @@ public class FileReaderService {
                 List<?> windMax = (List<?>) daily.get("windspeed_10m_max");
                 List<?> cloudMean = (List<?>) daily.get("cloudcover_mean");
 
+                int skippedCount = 0;
+                int savedCount = 0;
+
                 for (int i = 0; i < times.size(); i++) {
                     LocalDateTime date = LocalDate.parse(times.get(i)).atStartOfDay().withNano(0);
 
                     if (weatherDataExists(city, date)) {
-                        System.out.println("Skipped duplicate for " + city + " on " + date);
+                        skippedCount++;
                         continue;
                     }
 
                     Double avgTemp = null;
                     if (tempMax.get(i) != null && tempMin.get(i) != null) {
                         avgTemp = (((Number) tempMax.get(i)).doubleValue() + ((Number) tempMin.get(i)).doubleValue()) / 2;
-                        // Round avgTemp to 2 decimals
                         avgTemp = Math.round(avgTemp * 100.0) / 100.0;
                     }
 
-                    // Round values to 2 decimal places here
-                    Double windSpeed  = windMax.get(i) != null ? Math.round(((Number) windMax.get(i)).doubleValue() * 100.0) / 100.0 : null;
+                    Double windSpeed = windMax.get(i) != null ? Math.round(((Number) windMax.get(i)).doubleValue() * 100.0) / 100.0 : null;
                     Double cloudCover = cloudMean.get(i) != null ? Math.round(((Number) cloudMean.get(i)).doubleValue() * 100.0) / 100.0 : null;
 
                     WeatherData data = new WeatherData();
@@ -184,11 +186,13 @@ public class FileReaderService {
                     data.setCloudCover(cloudCover);
 
                     messageSender.sendWeatherData(data);
+                    savedCount++;
                 }
 
-                System.out.println("Backfilled last 12 months for city: " + city);
+                System.out.printf("Backfill completed for city: %s — Saved: %d, Skipped: %d%n", city, savedCount, skippedCount);
             }
         } catch (Exception e) {
+            System.err.println("Error fetching last year data for " + city);
             e.printStackTrace();
         }
     }
@@ -226,6 +230,20 @@ public class FileReaderService {
         for (String city : cities) {
             fetchLast24Hours(city);
             fetchLastYearData(city);
+        }
+    }
+
+    @Scheduled(fixedRate = 300000) // every 5 minutes (in milliseconds)
+    public void refreshWeatherEvery5Minutes() {
+        List<String> cities = weatherConfig.getCities();
+        if (cities == null || cities.isEmpty()) {
+            System.err.println("No cities configured for scheduled weather refresh.");
+            return;
+        }
+
+        System.out.println("Scheduled fetch: " + cities);
+        for (String city : cities) {
+            fetchLast24Hours(city); // already avoids duplicates inside
         }
     }
 }

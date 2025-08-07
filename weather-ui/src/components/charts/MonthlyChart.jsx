@@ -31,7 +31,7 @@ export default function MonthlyChart({ city = "Hanoi" }) {
   }, [city]);
 
   return (
-    <div style={{ background: "white", padding: "1rem", borderRadius: "8px" }}>
+    <div style={{ background: "black", padding: "1rem", borderRadius: "8px" }}>
       <h3>Last 12 Months Average Temperature</h3>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={chartData}>
