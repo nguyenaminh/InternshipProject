@@ -20,6 +20,8 @@ public class WeatherFetchController {
     @PostMapping("/fetch")
     public ResponseEntity<String> fetchWeather(@RequestParam String city) {
         weatherFetchService.fetchAndSendRange(city, 7); // Fetch past 7 days
+        weatherFetchService.fetchLastYearData(city);  
         return ResponseEntity.ok("Triggered weather fetch for " + city);
+
     }
 }

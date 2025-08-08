@@ -130,6 +130,12 @@ public class WeatherDataController {
         return ResponseEntity.ok("Consumer is ready");
     }
 
+    
+    @GetMapping("/weekly/last7")
+    public ResponseEntity<?> getLast7DaysStats(@RequestParam String city) {
+        return ResponseEntity.ok(service.getLast7DaysStats(city));
+    }
+    
     @GetMapping("/exists")
     public ResponseEntity<Boolean> checkExists(
             @RequestParam String city,
@@ -140,9 +146,20 @@ public class WeatherDataController {
         return ResponseEntity.ok(exists);
     }
     
-    @GetMapping("/weekly/last7")
-    public ResponseEntity<?> getLast7DaysStats(@RequestParam String city) {
-        return ResponseEntity.ok(service.getLast7DaysStats(city));
+    @GetMapping("/exists-range")
+    public ResponseEntity<Boolean> checkExistsInRange(
+            @RequestParam String city,
+            @RequestParam int daysBack
+    ) {
+        city = city.toLowerCase(); // Normalize city
+        boolean exists = service.hasEnoughRecentData(city, daysBack);
+        return ResponseEntity.ok(exists);
     }
 
+    @GetMapping("/exists-year")
+    public ResponseEntity<Boolean> checkYearlyExists(@RequestParam String city) {
+        city = city.toLowerCase(); // Normalize for consistency
+        boolean exists = service.existsYearlyData(city);
+        return ResponseEntity.ok(exists);
+    }
 }

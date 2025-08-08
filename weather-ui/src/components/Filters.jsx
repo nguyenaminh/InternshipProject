@@ -34,7 +34,7 @@ export default function Filters({ onChange }) {
 
   const handleCitySearch = async (e) => {
     e.preventDefault();
-    const city = inputCity.trim();
+    const city = inputCity.trim().toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
     if (!city) return;
 
     try {
@@ -47,7 +47,7 @@ export default function Filters({ onChange }) {
       console.log(`Fetch triggered for city: ${city}`);
 
       // 2. Wait for the backend to finish producing + consumer to save data
-      await new Promise((resolve) => setTimeout(resolve, 2000)); // small delay
+      await new Promise((resolve) => setTimeout(resolve, 2000)); 
     } catch (err) {
       console.error("Failed to trigger backend fetch:", err);
     }

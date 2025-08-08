@@ -219,8 +219,8 @@ public class WeatherDataService {
     }
 
     public boolean existsByCityAndDateTime(String city, LocalDateTime dateTime) {
-        return repository.existsByCityAndDateTime(city, dateTime);
-    }
+        return repository.existsByCityIgnoreCaseAndDateTime(city.toLowerCase(), dateTime);
+    } 
 
     public Map<String, Map<String, Double>> getLast7DaysStats(String city) {
         LocalDate today = LocalDate.now();
@@ -278,5 +278,21 @@ public class WeatherDataService {
         }
 
         return result;
+    }
+
+    public boolean hasEnoughRecentData(String city, int daysBack) {
+        LocalDateTime fromDate = LocalDateTime.now().minusDays(daysBack);
+        long count = repository.countByCityAndDateTimeAfter(city.toLowerCase(), fromDate);
+        return count >= daysBack * 24; // assuming hourly data
+    }
+
+    public boolean existsYearlyData(String city) {
+        LocalDate start = LocalDate.now().minusMonths(12).withDayOfMonth(1);
+        LocalDate end = LocalDate.now().minusDays(2);
+
+        List<LocalDate> requiredDates = start.datesUntil(end.plusDays(1)).toList();
+
+        return requiredDates.stream().allMatch(date ->
+                repository.existsByCityIgnoreCaseAndDateTime(city, date.atStartOfDay()));
     }
 }
