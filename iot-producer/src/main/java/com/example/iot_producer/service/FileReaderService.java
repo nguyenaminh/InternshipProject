@@ -246,4 +246,9 @@ public class FileReaderService {
             fetchLast24Hours(city); // already avoids duplicates inside
         }
     }
+
+    // public void triggerFetchForCity(String city) {
+    //     System.out.println("Triggering fetch for city: " + city);
+    //     fetchLast24Hours(city);
+    // }
 }

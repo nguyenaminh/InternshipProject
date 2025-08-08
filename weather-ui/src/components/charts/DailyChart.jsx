@@ -10,7 +10,8 @@ import {
   Legend,
 } from "recharts";
 
-export default function DailyChart({ city = "Hanoi" }) {
+export default function DailyChart({ filters }) {
+  const { city, dataTypes } = filters;
   const [chartData, setChartData] = useState([]);
 
   useEffect(() => {
@@ -20,9 +21,8 @@ export default function DailyChart({ city = "Hanoi" }) {
           `http://localhost:8080/api/weather/latest24h?city=${city}`
         );
         if (!res.ok) throw new Error("Fetch failed");
-        const raw = await res.json(); // Array<WeatherData>
+        const raw = await res.json();
 
-        // Map hour -> full weather values
         const dataMap = new Map();
         raw.forEach((d) => {
           const dt = new Date(d.dateTime);
@@ -34,7 +34,6 @@ export default function DailyChart({ city = "Hanoi" }) {
           });
         });
 
-        // Align now to past hour
         const now = new Date();
         now.setMinutes(0, 0, 0);
 
@@ -82,10 +81,27 @@ export default function DailyChart({ city = "Hanoi" }) {
             }}
           />
           <Legend />
-          <Bar dataKey="temp" name="Temp (°C)" fill="#2563eb" />
-          <Bar dataKey="wind" name="Wind (m/s)" fill="#10b981" />
-          <Bar dataKey="cloud" name="Cloud (%)" fill="#facc15" />
+
+          <Bar
+            dataKey="temp"
+            name="Temp (°C)"
+            fill="#2563eb"
+            hide={!filters.dataTypes.temperature}
+          />
+          <Bar
+            dataKey="wind"
+            name="Wind (m/s)"
+            fill="#10b981"
+            hide={!filters.dataTypes.windSpeed}
+          />
+          <Bar
+            dataKey="cloud"
+            name="Cloud (%)"
+            fill="#facc15"
+            hide={!filters.dataTypes.cloudCover}
+          />
         </BarChart>
+
       </ResponsiveContainer>
     </div>
   );

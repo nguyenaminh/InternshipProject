@@ -52,9 +52,24 @@ export default function WeeklyChart({ filters }) {
           <YAxis />
           <Tooltip />
           <Legend />
-          <Bar dataKey="temperature" name="Temp (°C)" fill="#2563eb" />
-          <Bar dataKey="windSpeed" name="Wind (m/s)" fill="#10b981" />
-          <Bar dataKey="cloudCover" name="Cloud (%)" fill="#facc15" />
+          <Bar
+            dataKey="temperature"
+            name="Temp (°C)"
+            fill="#2563eb"
+            hide={!filters.dataTypes.temperature}
+          />
+          <Bar
+            dataKey="windSpeed"
+            name="Wind (m/s)"
+            fill="#10b981"
+            hide={!filters.dataTypes.windSpeed}
+          />
+          <Bar
+            dataKey="cloudCover"
+            name="Cloud (%)"
+            fill="#facc15"
+            hide={!filters.dataTypes.cloudCover}
+          />
         </BarChart>
       </ResponsiveContainer>
     </div>

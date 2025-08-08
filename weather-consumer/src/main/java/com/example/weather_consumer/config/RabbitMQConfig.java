@@ -17,6 +17,7 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -86,7 +87,7 @@ public class RabbitMQConfig {
 
         Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter(objectMapper);
 
-        // ✅ Map producer class name to consumer class
+        // Map producer class name to consumer class
         DefaultClassMapper classMapper = new DefaultClassMapper();
         Map<String, Class<?>> idClassMapping = new HashMap<>();
         idClassMapping.put("com.example.iot_producer.model.WeatherData", WeatherData.class);
@@ -108,6 +109,8 @@ public class RabbitMQConfig {
         container.setQueueNames(mainQueue.getName());
         container.setAcknowledgeMode(AcknowledgeMode.MANUAL);
 
+        AtomicInteger messageCount = new AtomicInteger(0); // New counter
+
         container.setMessageListener((ChannelAwareMessageListener) (message, channel) -> {
             try {
                 WeatherData data = (WeatherData) jsonMessageConverter.fromMessage(message);
@@ -117,8 +120,11 @@ public class RabbitMQConfig {
                 }
 
                 weatherDataService.saveData(data);
-                logger.info("Weather data saved: {}", data);
 
+                int count = messageCount.incrementAndGet(); // Increment the count
+                logger.info("Total weather data messages received: {}", count); // Only log count
+
+                // Channel is guaranteed non-null in MANUAL mode with ChannelAwareMessageListener
                 channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
 
             } catch (Exception e) {
@@ -129,6 +135,7 @@ public class RabbitMQConfig {
 
         return container;
     }
+
 
     private boolean isValid(WeatherData data) {
         if (data == null) return false;

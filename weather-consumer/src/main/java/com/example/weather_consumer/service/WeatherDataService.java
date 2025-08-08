@@ -170,7 +170,7 @@ public class WeatherDataService {
         }
     }
 
-    public Map<String, Double> getLast12MonthsStats(String city) {
+    public Map<String, Map<String, Double>> getLast12MonthsStats(String city) {
         LocalDate now = LocalDate.now().withDayOfMonth(1); // current month start
         LocalDate start = now.minusMonths(11); // 12 months ago
         LocalDateTime startDateTime = start.atStartOfDay();
@@ -181,12 +181,35 @@ public class WeatherDataService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
 
         return data.stream()
-                .collect(Collectors.groupingBy(
-                        d -> d.getDateTime().format(formatter),
-                        TreeMap::new, // keeps months sorted
-                        Collectors.averagingDouble(d -> d.getTemperature() != null ? d.getTemperature() : 0)
-                ));
+            .collect(Collectors.groupingBy(
+                d -> d.getDateTime().format(formatter),
+                TreeMap::new,
+                Collectors.collectingAndThen(Collectors.toList(), list -> {
+                    double tempAvg = list.stream()
+                        .filter(d -> d.getTemperature() != null)
+                        .mapToDouble(WeatherData::getTemperature)
+                        .average().orElse(0.0);
+
+                    double windAvg = list.stream()
+                        .filter(d -> d.getWindSpeed() != null)
+                        .mapToDouble(WeatherData::getWindSpeed)
+                        .average().orElse(0.0);
+
+                    double cloudAvg = list.stream()
+                        .filter(d -> d.getCloudCover() != null)
+                        .mapToDouble(WeatherData::getCloudCover)
+                        .average().orElse(0.0);
+
+                    Map<String, Double> stats = new HashMap<>();
+                    stats.put("temperature", Math.round(tempAvg * 10.0) / 10.0);
+                    stats.put("windSpeed", Math.round(windAvg * 10.0) / 10.0);
+                    stats.put("cloudCover", Math.round(cloudAvg * 10.0) / 10.0);
+
+                    return stats;
+                })
+            ));
     }
+
 
     public List<WeatherData> getLatest24Hours(String city) {
         LocalDateTime now = LocalDateTime.now();
