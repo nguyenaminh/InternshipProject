@@ -38,20 +38,24 @@ export default function Filters({ onChange }) {
     if (!city) return;
 
     try {
-      // Tell backend producer to fetch data for the city
-      const res = await fetch(`http://localhost:8080/api/producer/fetch?city=${encodeURIComponent(city)}`, {
+      // 1. Trigger the producer to fetch weather data for the searched city
+      const res = await fetch(`http://localhost:8081/api/produce/fetch?city=${encodeURIComponent(city)}`, {
         method: "POST",
       });
 
       if (!res.ok) throw new Error("Producer fetch failed");
       console.log(`Fetch triggered for city: ${city}`);
+
+      // 2. Wait for the backend to finish producing + consumer to save data
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // small delay
     } catch (err) {
       console.error("Failed to trigger backend fetch:", err);
     }
 
-    // Update filter state for the UI to show the selected city
+    // 3. Now set filter state to re-trigger data fetch with the new city
     setFilters((prev) => ({ ...prev, city }));
   };
+
 
 
   return (

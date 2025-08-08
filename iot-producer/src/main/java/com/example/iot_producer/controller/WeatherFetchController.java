@@ -18,12 +18,8 @@ public class WeatherFetchController {
     }
 
     @PostMapping("/fetch")
-    public ResponseEntity<String> fetchCityWeather(@RequestParam String city) {
-        try {
-            weatherFetchService.fetchAndSend(city);
-            return ResponseEntity.ok("Weather fetched and sent for city: " + city);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
-        }
+    public ResponseEntity<String> fetchWeather(@RequestParam String city) {
+        weatherFetchService.fetchAndSendRange(city, 7); // Fetch past 7 days
+        return ResponseEntity.ok("Triggered weather fetch for " + city);
     }
 }
