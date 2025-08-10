@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/weather")
@@ -161,5 +162,21 @@ public class WeatherDataController {
         city = city.toLowerCase(); // Normalize for consistency
         boolean exists = service.existsYearlyData(city);
         return ResponseEntity.ok(exists);
+    }
+
+    @GetMapping("/latest-hour")
+    public ResponseEntity<?> getLatestHourStats(@RequestParam String city) {
+        Optional<WeatherData> latest = service.getLatestHourData(city);
+        if (latest.isPresent()) {
+            WeatherData data = latest.get();
+            Map<String, Object> response = Map.of(
+                    "temperature", data.getTemperature(),
+                    "windSpeed", data.getWindSpeed(),
+                    "cloudCover", data.getCloudCover()
+            );
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.noContent().build();
+        }
     }
 }

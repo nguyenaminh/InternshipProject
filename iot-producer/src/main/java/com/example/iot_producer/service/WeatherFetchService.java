@@ -1,6 +1,10 @@
 package com.example.iot_producer.service;
 
 import com.example.iot_producer.model.WeatherData;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -28,8 +32,14 @@ public class WeatherFetchService {
             return;
         }
 
-        double lat = getLat(city);
-        double lon = getLon(city);
+        double[] coords = getCoordinates(city);
+        double lat = coords[0];
+        double lon = coords[1];
+
+        if (lat == 0.0 && lon == 0.0) {
+            System.err.println("Could not get valid coordinates for city: " + city);
+            return;
+        }
 
         for (int i = 0; i < daysBack; i++) {
             LocalDateTime targetDate = LocalDateTime.now().minusDays(i);
@@ -70,10 +80,16 @@ public class WeatherFetchService {
             System.out.printf("Last year data already exists for city: %s%n", city);
             return;
         }
-        
+
         try {
-            double lat = getLat(city);
-            double lon = getLon(city);
+            double[] coords = getCoordinates(city);
+            double lat = coords[0];
+            double lon = coords[1];
+
+            if (lat == 0.0 && lon == 0.0) {
+                System.err.println("Could not get valid coordinates for city: " + city);
+                return;
+            }
 
             String url = String.format(
                 "https://archive-api.open-meteo.com/v1/archive?latitude=%f&longitude=%f" +
@@ -161,6 +177,38 @@ public class WeatherFetchService {
         }
     }
 
+    // --- New method to get coordinates from OpenStreetMap Nominatim ---
+
+    private double[] getCoordinates(String city) {
+        try {
+            String url = UriComponentsBuilder
+                    .fromHttpUrl("https://nominatim.openstreetmap.org/search")
+                    .queryParam("q", city)
+                    .queryParam("format", "json")
+                    .queryParam("limit", 1)
+                    .build()
+                    .toUriString();
+
+            // Set a User-Agent header for Nominatim API usage policy compliance
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("User-Agent", "iot-producer-app/1.0 (your-email@example.com)");
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<List> response = restTemplate.exchange(url, org.springframework.http.HttpMethod.GET, entity, List.class);
+            List<Map<String, Object>> body = response.getBody();
+
+            if (body != null && !body.isEmpty()) {
+                Map<String, Object> location = body.get(0);
+                double lat = Double.parseDouble((String) location.get("lat"));
+                double lon = Double.parseDouble((String) location.get("lon"));
+                return new double[]{lat, lon};
+            }
+        } catch (Exception e) {
+            System.err.println("Error fetching coordinates for city '" + city + "': " + e.getMessage());
+        }
+        // fallback to zero if not found
+        return new double[]{0.0, 0.0};
+    }
 
     private static class HourlyWeatherResponse {
         public Hourly hourly;
@@ -171,17 +219,5 @@ public class WeatherFetchService {
             public double[] wind_speed_10m;
             public double[] cloud_cover;
         }
-    }
-
-    private double getLat(String city) {
-        return switch (city.toLowerCase()) {
-            default -> 0.0;
-        };
-    }
-
-    private double getLon(String city) {
-        return switch (city.toLowerCase()) {
-            default -> 0.0;
-        };
     }
 }

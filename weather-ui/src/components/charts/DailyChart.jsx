@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import {
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   Tooltip,
@@ -47,9 +47,12 @@ export default function DailyChart({ filters }) {
           const values = dataMap.get(slotTime.getTime()) || {};
           slots.push({
             time: timeLabel,
-            temp: values.temp != null ? parseFloat(values.temp.toFixed(1)) : null,
-            wind: values.wind != null ? parseFloat(values.wind.toFixed(1)) : null,
-            cloud: values.cloud != null ? parseFloat(values.cloud.toFixed(0)) : null,
+            temp:
+              values.temp != null ? parseFloat(values.temp.toFixed(1)) : null,
+            wind:
+              values.wind != null ? parseFloat(values.wind.toFixed(1)) : null,
+            cloud:
+              values.cloud != null ? parseFloat(values.cloud.toFixed(0)) : null,
           });
         }
 
@@ -64,44 +67,65 @@ export default function DailyChart({ filters }) {
   }, [city]);
 
   return (
-    <div style={{ background: "#111", padding: "1rem", borderRadius: "8px", color: "white" }}>
-      <h3 style={{ marginBottom: "1rem" }}>Last 24 Hours - Weather Overview</h3>
+    <div
+      style={{
+        background: "#111827",
+        padding: "1rem",
+        borderRadius: "8px",
+        color: "white",
+      }}
+    >
+      <h3 style={{ marginBottom: "1rem" }}>Daily Temperatures</h3>
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={chartData}>
-          <CartesianGrid stroke="#333" />
-          <XAxis dataKey="time" interval={3} stroke="#ccc" />
-          <YAxis stroke="#ccc" />
+        <LineChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+          <CartesianGrid stroke="#374151" strokeDasharray="3 3" />
+          <XAxis dataKey="time" interval={3} stroke="#9ca3af" />
+          <YAxis stroke="#9ca3af" />
           <Tooltip
-            contentStyle={{ backgroundColor: "#222", border: "none" }}
+            contentStyle={{ backgroundColor: "#1f2937", border: "none", color: "white" }}
             formatter={(value, name) => {
               if (name === "Temp (°C)") return [`${value}°C`, name];
-              if (name === "Wind (m/s)") return [`${value} m/s`, name];
+              if (name === "Wind (km/h)") return [`${value} km/h`, name];
               if (name === "Cloud (%)") return [`${value}%`, name];
               return [value, name];
             }}
           />
-          <Legend />
+          <Legend verticalAlign="top" height={36} />
 
-          <Bar
-            dataKey="temp"
-            name="Temp (°C)"
-            fill="#2563eb"
-            hide={!filters.dataTypes.temperature}
-          />
-          <Bar
-            dataKey="wind"
-            name="Wind (m/s)"
-            fill="#10b981"
-            hide={!filters.dataTypes.windSpeed}
-          />
-          <Bar
-            dataKey="cloud"
-            name="Cloud (%)"
-            fill="#facc15"
-            hide={!filters.dataTypes.cloudCover}
-          />
-        </BarChart>
-
+          {dataTypes.temperature && (
+            <Line
+              type="monotone"
+              dataKey="temp"
+              name="Temp (°C)"
+              stroke="#2563eb"
+              strokeWidth={2}
+              dot={{ r: 3 }}
+              activeDot={{ r: 6 }}
+            />
+          )}
+          {dataTypes.windSpeed && (
+            <Line
+              type="monotone"
+              dataKey="wind"
+              name="Wind (km/h)"
+              stroke="#10b981"
+              strokeWidth={2}
+              dot={{ r: 3 }}
+              activeDot={{ r: 6 }}
+            />
+          )}
+          {dataTypes.cloudCover && (
+            <Line
+              type="monotone"
+              dataKey="cloud"
+              name="Cloud (%)"
+              stroke="#facc15"
+              strokeWidth={2}
+              dot={{ r: 3 }}
+              activeDot={{ r: 6 }}
+            />
+          )}
+        </LineChart>
       </ResponsiveContainer>
     </div>
   );

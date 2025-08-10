@@ -295,4 +295,12 @@ public class WeatherDataService {
         return requiredDates.stream().allMatch(date ->
                 repository.existsByCityIgnoreCaseAndDateTime(city, date.atStartOfDay()));
     }
+
+    public Optional<WeatherData> getLatestHourData(String city) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime oneHourAgo = now.minusHours(1);
+
+        List<WeatherData> data = repository.findByCityAndDateTimeBetweenOrderByDateTimeAsc(city, oneHourAgo, now);
+        return data.isEmpty() ? Optional.empty() : Optional.of(data.get(data.size() - 1));
+    }
 }
