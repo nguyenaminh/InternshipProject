@@ -6,20 +6,20 @@ export default function Sidebar() {
     <aside
       style={{
         width: "180px",
-        flexShrink: 0,
         background: "linear-gradient(180deg, #0f2027, #203a43, #2c5364)",
         color: "#cbd5e1",
         padding: "1.5rem 1rem",
         display: "flex",
         flexDirection: "column",
-        height: "100vh",        // changed from minHeight: 100vh
-        position: "sticky",
-        top: 0,
-        alignSelf: "flex-start",
+        position: "fixed",
+        top: "100px", // match navbar height
+        left: 0,
+        height: "calc(100vh - 64px)", // fill the remaining space
         overflowY: "auto",
         boxShadow: "2px 0 10px rgba(15, 32, 39, 0.8)",
         fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
         userSelect: "none",
+        zIndex: 1000
       }}
     >
       <h2
@@ -29,7 +29,7 @@ export default function Sidebar() {
           fontWeight: "700",
           letterSpacing: "1.2px",
           textAlign: "center",
-          color: "#94a3b8", // lighter blue-gray
+          color: "#94a3b8",
           textShadow: "0 1px 3px rgba(44, 83, 100, 0.8)",
         }}
       >
@@ -53,7 +53,7 @@ export default function Sidebar() {
               boxShadow: "inset 0 0 0 0 transparent",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#1e40af"; // vibrant blue highlight
+              e.currentTarget.style.backgroundColor = "#1e40af";
               e.currentTarget.style.color = "#fff";
               e.currentTarget.style.boxShadow = "0 0 12px #1e40afcc";
             }}

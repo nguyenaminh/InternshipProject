@@ -22,28 +22,34 @@ function App() {
       <div
         style={{
           position: "relative",
-          height: "100vh",   // fixed height, not min-height
+          minHeight: "100vh", // ⬅ changed from height
           fontFamily: "sans-serif",
           color: "white",
           overflowX: "hidden",
-          overflowY: "hidden", // or "auto" if you want scroll inside
+          overflowY: "hidden", // keep auto if you want page scroll
           boxSizing: "border-box",
         }}
       >
-        {/* Starry background behind everything */}
         <Background />
-
-        {/* Content container with higher zIndex */}
         <div style={{ position: "relative", zIndex: 1 }}>
-          {/* Pass filters and setter to Navbar */}
           <Navbar filters={filters} setFilters={setFilters} />
 
-          <div style={{ display: "flex", height: "calc(100vh - 64px)" }}>
+          <div style={{ display: "flex", minHeight: "calc(100vh - 64px)" }}> 
+            {/* ⬅ changed height to minHeight */}
             <Sidebar />
-            <main style={{ flexGrow: 1, padding: "2rem", overflowY: "auto" }}>
+            <main
+              style={{
+                flexGrow: 1,
+                padding: "2rem",
+                overflowY: "auto",
+                display: "flex",
+                flexDirection: "column",
+                marginLeft: "180px", // match sidebar width
+                marginTop: "64px"    // match navbar height
+              }}
+            >
               <Routes>
                 <Route path="/" element={<Dashboard filters={filters} />} />
-                {/* You can remove /table route if datatable is inside dashboard now */}
               </Routes>
             </main>
           </div>

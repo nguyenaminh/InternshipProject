@@ -5,7 +5,7 @@ export default function Navbar({ filters, setFilters }) {
     <nav
       style={{
         background:
-          "rgba(30, 64, 175, 0.1)", // less opaque, more transparent
+          "rgb(17, 24, 39)", // less opaque, more transparent
         backdropFilter: "blur(5px)", // glass blur effect
         WebkitBackdropFilter: "blur(10px)",
         borderBottom: "2px solid #3b82f6",
@@ -15,9 +15,10 @@ export default function Navbar({ filters, setFilters }) {
         alignItems: "center",
         justifyContent: "space-between",
         boxShadow: "0 8px 20px rgba(37, 99, 235, 0.3)",
-        position: "sticky",
+        position: "fixed",
+        width: "100%",
         top: 0,
-        zIndex: 20,
+        zIndex: 1000,
         flexWrap: "wrap",
         gap: "1rem",
         fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
@@ -37,7 +38,7 @@ export default function Navbar({ filters, setFilters }) {
         Weather Monitoring Dashboard
       </h1>
 
-      <div style={{ flexGrow: 1, maxWidth: "600px" }}>
+      <div style={{ flexGrow: 1, maxWidth: "600px", paddingRight: "50px" }}>
         <Filters filters={filters} onChange={setFilters} />
       </div>
     </nav>
