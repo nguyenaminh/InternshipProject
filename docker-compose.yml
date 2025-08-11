@@ -1,0 +1,47 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: iotuser
+      RABBITMQ_DEFAULT_PASS: iotpass
+    ports:
+      - "5672:5672"    # RabbitMQ communication port
+      - "15672:15672"  # RabbitMQ Management UI port
+
+  producer:
+    build: ./iot-producer
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+    depends_on:
+      - rabbitmq
+
+  consumer:
+    build: ./weather-consumer
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/weather_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+    depends_on:
+      - rabbitmq
+      - mysql
+      - producer
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ""           # empty root password to match your config
+      MYSQL_DATABASE: weather_db        # database name as per your URL
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+volumes:
+  mysql-data:
