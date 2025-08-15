@@ -144,7 +144,7 @@ public class WeatherFetchService {
         city = city.toLowerCase(); // Normalize before sending to consumer
 
         String url = UriComponentsBuilder
-                .fromHttpUrl("http://localhost:8080/api/weather/exists-range")
+                .fromHttpUrl("http://consumer:8080/api/weather/exists-range")
                 .queryParam("city", city)
                 .queryParam("daysBack", daysBack)
                 .build()
@@ -163,7 +163,7 @@ public class WeatherFetchService {
         city = city.toLowerCase(); // Normalize
 
         String url = UriComponentsBuilder
-                .fromHttpUrl("http://localhost:8080/api/weather/exists-year")
+                .fromHttpUrl("http://consumer:8080/api/weather/exists-year")
                 .queryParam("city", city)
                 .build()
                 .toUriString();

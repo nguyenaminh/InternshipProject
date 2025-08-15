@@ -10,11 +10,11 @@ import java.util.List;
 @ConfigurationProperties(prefix = "weather")
 public class WeatherConfig {
 
-    private String cities; // comma-separated in application.properties
+    private String cities;
 
     public List<String> getCities() {
         if (cities == null || cities.isEmpty()) {
-            return List.of(); // return empty list if nothing configured
+            return List.of();
         }
         return Arrays.stream(cities.split(","))
                      .map(String::trim)

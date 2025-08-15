@@ -1,47 +1,87 @@
+version: "3.8"
+
 services:
   rabbitmq:
     image: rabbitmq:3-management
+    networks:
+      - weather-net
     environment:
       RABBITMQ_DEFAULT_USER: iotuser
       RABBITMQ_DEFAULT_PASS: iotpass
     ports:
-      - "5672:5672"    # RabbitMQ communication port
-      - "15672:15672"  # RabbitMQ Management UI port
+      - "5672:5672"    # RabbitMQ communication
+      - "15672:15672"  # RabbitMQ Management UI
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  producer:
-    build: ./iot-producer
-    ports:
-      - "8081:8081"
+  mysql:
+    image: mysql:8.0
+    networks:
+      - weather-net
     environment:
-      SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: 5672
-    depends_on:
-      - rabbitmq
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: weather_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   consumer:
+    container_name: consumer
     build: ./weather-consumer
+    networks:
+      - weather-net
     ports:
       - "8080:8080"
     environment:
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: iotuser
+      SPRING_RABBITMQ_PASSWORD: iotpass
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/weather_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: ""
     depends_on:
-      - rabbitmq
-      - mysql
-      - producer
-
-  mysql:
-    image: mysql:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: ""           # empty root password to match your config
-      MYSQL_DATABASE: weather_db        # database name as per your URL
+      rabbitmq:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/weather/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  producer:
+    container_name: producer
+    build: ./iot-producer
+    networks:
+      - weather-net
     ports:
-      - "3306:3306"
-    volumes:
-      - mysql-data:/var/lib/mysql
+      - "8081:8081"
+    environment:
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: iotuser
+      SPRING_RABBITMQ_PASSWORD: iotpass
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      consumer:
+        condition: service_healthy
 
 volumes:
   mysql-data:
+
+networks:
+  weather-net:
+    driver: bridge

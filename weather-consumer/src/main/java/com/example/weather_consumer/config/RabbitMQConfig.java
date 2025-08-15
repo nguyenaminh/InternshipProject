@@ -122,7 +122,7 @@ public class RabbitMQConfig {
                 weatherDataService.saveData(data);
 
                 int count = messageCount.incrementAndGet(); // Increment the count
-                logger.info("Total weather data messages received: {}", count); // Only log count
+                logger.info("Total weather data messages received: {}", count);
 
                 // Channel is guaranteed non-null in MANUAL mode with ChannelAwareMessageListener
                 channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);

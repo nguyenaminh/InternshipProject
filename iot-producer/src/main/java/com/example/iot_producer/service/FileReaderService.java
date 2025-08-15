@@ -53,7 +53,7 @@ public class FileReaderService {
             LocalDateTime end = dateTime.withMinute(59).withSecond(59).withNano(999999999);
 
             String url = String.format(
-                "http://localhost:8080/api/weather/filter?city=%s&start=%s&end=%s&page=0&size=1",
+                "http://consumer:8080/api/weather/filter?city=%s&start=%s&end=%s&page=0&size=1",
                 city,
                 start,
                 end
@@ -210,9 +210,9 @@ public class FileReaderService {
         boolean consumerReady = false;
         int attempts = 0;
 
-        while (!consumerReady && attempts < 10) {
+        while (!consumerReady && attempts < 20) {
             try {
-                restTemplate.getForObject("http://localhost:8080/api/weather/health", String.class);
+                restTemplate.getForObject("http://consumer:8080/api/weather/health", String.class);
                 consumerReady = true;
                 System.out.println("Consumer is ready!");
             } catch (Exception e) {
@@ -223,7 +223,7 @@ public class FileReaderService {
         }
 
         if (!consumerReady) {
-            System.err.println("Consumer not available after 10 attempts. Aborting startup data fetch.");
+            System.err.println("Consumer not available after 20 attempts. Aborting startup data fetch.");
             return;
         }
 

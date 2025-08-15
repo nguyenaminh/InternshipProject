@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 @Service
 public class ProducerTriggerService {
 
-    @Value("${producer.api.url:http://localhost:8081}")
+    @Value("${producer.api.url}")
     private String producerBaseUrl;
 
     private final RestTemplate restTemplate = new RestTemplate();
