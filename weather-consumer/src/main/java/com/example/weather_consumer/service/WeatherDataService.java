@@ -302,4 +302,8 @@ public class WeatherDataService {
         List<WeatherData> data = repository.findByCityAndDateTimeBetweenOrderByDateTimeAsc(city, oneHourAgo, now);
         return data.isEmpty() ? Optional.empty() : Optional.of(data.get(data.size() - 1));
     }
+
+    public long count() {
+        return repository.count();
+    }
 }

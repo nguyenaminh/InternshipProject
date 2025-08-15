@@ -210,9 +210,10 @@ public class FileReaderService {
         boolean consumerReady = false;
         int attempts = 0;
 
-        while (!consumerReady && attempts < 20) {
+        while (!consumerReady && attempts < 40) {
             try {
-                restTemplate.getForObject("http://consumer:8080/api/weather/health", String.class);
+                String health = restTemplate.getForObject("http://consumer:8080/api/weather/health", String.class);
+                System.out.println("Consumer health check: " + health);
                 consumerReady = true;
                 System.out.println("Consumer is ready!");
             } catch (Exception e) {

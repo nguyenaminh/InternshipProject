@@ -4,11 +4,12 @@ import com.example.weather_consumer.model.WeatherData;
 import com.example.weather_consumer.service.WeatherDataService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.dao.DataAccessException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -128,10 +129,15 @@ public class WeatherDataController {
 
     @GetMapping("/health")
     public ResponseEntity<String> healthCheck() {
-        return ResponseEntity.ok("Consumer is ready");
+        try {
+            // Try a simple DB query to ensure DB is up
+            service.count(); // You need to implement this method in WeatherDataService
+            return ResponseEntity.ok("Consumer is ready");
+        } catch (DataAccessException e) {
+            return ResponseEntity.status(503).body("Consumer DB not ready: " + e.getMessage());
+        }
     }
 
-    
     @GetMapping("/weekly/last7")
     public ResponseEntity<?> getLast7DaysStats(@RequestParam String city) {
         return ResponseEntity.ok(service.getLast7DaysStats(city));
