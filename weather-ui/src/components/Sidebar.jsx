@@ -12,8 +12,8 @@ export default function Sidebar() {
         padding: "1.5rem 1rem",
         display: "flex",
         flexDirection: "column",
-        height: "100vh",        // changed from minHeight: 100vh
-        position: "sticky",
+        height: "1200px",        // changed from minHeight: 100vh
+        position: "relative",
         top: 0,
         alignSelf: "flex-start",
         overflowY: "auto",
