@@ -21,6 +21,7 @@ function App() {
     <Router>
       <div
         style={{
+          paddingTop: "5rem", // space for fixed navbar
           position: "relative",
           minHeight: "100vh",   // fixed height, not min-height
           fontFamily: "sans-serif",
@@ -43,8 +44,6 @@ function App() {
             <main style={{ flexGrow: 1, padding: "2rem", overflowY: "auto" }}>
               <Routes>
                 <Route path="/" element={<Dashboard filters={filters} />} />
-                {/* You can remove /table route if datatable is inside dashboard now */}
-                
               </Routes>
             </main>
           </div>

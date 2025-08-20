@@ -4,6 +4,7 @@ import com.example.iot_producer.model.WeatherData;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -189,14 +190,21 @@ public class WeatherFetchService {
                     .build()
                     .toUriString();
 
-            // Set a User-Agent header for Nominatim API usage policy compliance
+            // Proper User-Agent required by Nominatim
             HttpHeaders headers = new HttpHeaders();
-            headers.set("User-Agent", "iot-producer-app/1.0 (your-email@example.com)");
+            headers.set("User-Agent", "WeatherMonitoringApp/1.0 (myemail@example.com)");
+            headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
-            ResponseEntity<List> response = restTemplate.exchange(url, org.springframework.http.HttpMethod.GET, entity, List.class);
-            List<Map<String, Object>> body = response.getBody();
+            ResponseEntity<List> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    List.class
+            );
 
+            List<Map<String, Object>> body = response.getBody();
             if (body != null && !body.isEmpty()) {
                 Map<String, Object> location = body.get(0);
                 double lat = Double.parseDouble((String) location.get("lat"));
@@ -209,6 +217,7 @@ public class WeatherFetchService {
         // fallback to zero if not found
         return new double[]{0.0, 0.0};
     }
+
 
     private static class HourlyWeatherResponse {
         public Hourly hourly;
