@@ -1,0 +1,3 @@
+- Chia database thành các bảng phục vụ cho các mốc thời gian khác nhau (ngày, tháng, tuần)
+- Điều chỉnh UI và backend để có thể chọn xem cụ thể một tháng có dữ liệu ra sao, trong tháng đó có cụ thể thể từng ngày từng giờ ra sao.
+- Xem qua Highcharts react.
